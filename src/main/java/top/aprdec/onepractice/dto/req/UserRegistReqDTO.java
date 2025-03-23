@@ -1,4 +1,4 @@
-package top.aprdec.onepractice.dto;
+package top.aprdec.onepractice.dto.req;
 
 import lombok.Data;
 

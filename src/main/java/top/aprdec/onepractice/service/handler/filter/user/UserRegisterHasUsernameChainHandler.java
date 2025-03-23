@@ -1,9 +1,8 @@
 package top.aprdec.onepractice.service.handler.filter.user;
 
 import lombok.AllArgsConstructor;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
-import top.aprdec.onepractice.dto.UserRegistReqDTO;
+import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
 import top.aprdec.onepractice.service.UserService;
 
 @Component

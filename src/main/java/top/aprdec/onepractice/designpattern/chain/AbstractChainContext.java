@@ -9,7 +9,6 @@ import top.aprdec.onepractice.util.ApplicationContextHolder;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
 public class AbstractChainContext<T> implements CommandLineRunner {
 
     private final Map<String, List<AbstractChainHandler>> abstractChainHandlerContainer = new HashMap<>();

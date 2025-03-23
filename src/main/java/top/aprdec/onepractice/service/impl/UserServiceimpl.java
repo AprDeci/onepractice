@@ -6,16 +6,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.aprdec.onepractice.designpattern.chain.AbstractChainContext;
-import top.aprdec.onepractice.dto.UserRegistReqDTO;
+import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
+import top.aprdec.onepractice.dto.resp.UserRegistRespDTO;
+import top.aprdec.onepractice.eenum.UserChainMarkEnum;
 import top.aprdec.onepractice.entity.UserDO;
 import top.aprdec.onepractice.service.UserService;
 import top.aprdec.onepractice.util.BeanUtil;
 
-import static top.aprdec.onepractice.constant.RedisKeyConstant.LOCK_USER_REGISTER;
+import static top.aprdec.onepractice.commmon.constant.RedisKeyConstant.LOCK_USER_REGISTER;
 
 @Service
 @Slf4j
@@ -37,9 +38,9 @@ public class UserServiceimpl implements UserService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void register(UserRegistReqDTO requestparam) {
+    public UserRegistRespDTO register(UserRegistReqDTO requestparam) {
         //    TODO:过滤器链
-        abstractChainContext.
+        abstractChainContext.handler(UserChainMarkEnum.USER_REGISTER_FILTER.name(),requestparam);
         RLock rlock =redissonClient.getLock(LOCK_USER_REGISTER + requestparam.getUsername());
         boolean trylock = rlock.tryLock();
         if(!trylock){
@@ -59,6 +60,7 @@ public class UserServiceimpl implements UserService {
         }finally {
             rlock.unlock();
         }
+        return BeanUtil.convert(requestparam, UserRegistRespDTO.class);
         }
 
     @Override

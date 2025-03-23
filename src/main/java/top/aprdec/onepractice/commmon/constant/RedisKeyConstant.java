@@ -1,4 +1,4 @@
-package top.aprdec.onepractice.constant;
+package top.aprdec.onepractice.commmon.constant;
 
 public class RedisKeyConstant {
 

@@ -2,7 +2,7 @@ package top.aprdec.onepractice.service.handler.filter.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import top.aprdec.onepractice.dto.UserRegistReqDTO;
+import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
 import java.util.Objects;
 
 @Component
