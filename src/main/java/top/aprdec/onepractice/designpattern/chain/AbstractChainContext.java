@@ -2,12 +2,14 @@ package top.aprdec.onepractice.designpattern.chain;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.Ordered;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import top.aprdec.onepractice.util.ApplicationContextHolder;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component
 public class AbstractChainContext<T> implements CommandLineRunner {
 
     private final Map<String, List<AbstractChainHandler>> abstractChainHandlerContainer = new HashMap<>();

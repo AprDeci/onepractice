@@ -5,6 +5,8 @@ import top.aprdec.onepractice.dto.UserRegistReqDTO;
 
 public interface UserService {
 
+    Boolean hasUsername(String username);
+
 //    账号注册,登陆,登出方法
 
     @Transactional(rollbackFor = Exception.class)

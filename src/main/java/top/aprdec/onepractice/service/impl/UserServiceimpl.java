@@ -9,6 +9,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import top.aprdec.onepractice.designpattern.chain.AbstractChainContext;
 import top.aprdec.onepractice.dto.UserRegistReqDTO;
 import top.aprdec.onepractice.entity.UserDO;
 import top.aprdec.onepractice.service.UserService;
@@ -23,11 +24,22 @@ public class UserServiceimpl implements UserService {
     private final EasyEntityQuery easyEntityQuery;
     private final  RedissonClient redissonClient;
     private final RBloomFilter<String> userRegisterCachePenetrationFilter;
+    private final AbstractChainContext<UserRegistReqDTO> abstractChainContext;
+
+
+    public Boolean hasUsername(String username){
+        boolean hasUsername = userRegisterCachePenetrationFilter.contains(username);
+        if(hasUsername){
+//            TODO:检查缓存层
+        }
+        return true;
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void register(UserRegistReqDTO requestparam) {
         //    TODO:过滤器链
+        abstractChainContext.
         RLock rlock =redissonClient.getLock(LOCK_USER_REGISTER + requestparam.getUsername());
         boolean trylock = rlock.tryLock();
         if(!trylock){
