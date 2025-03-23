@@ -1,0 +1,8 @@
+spring:
+  redis:
+    redisson:
+      config: |
+        singleServerConfig:
+          address: redis://192.168.100.1:6379 # Redis 连接地址，前缀为 redis://
+          #password: 123456 
+          timeout: 3000 # 命令执行超时时间(毫秒)
