@@ -13,6 +13,7 @@ public class UserRegisterHasUsernameChainHandler implements UserRegisterCreateCh
 
     @Override
     public void handler(UserRegistReqDTO requestParam) {
+//        如果返回false
         if (!userService.hasUsername(requestParam.getUsername())) {
             throw new RuntimeException("用户名已存在");
         }

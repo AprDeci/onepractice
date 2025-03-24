@@ -17,5 +17,6 @@ public class UserDO extends BaseDO implements ProxyEntityAvailable<UserDO , User
     private String password;
     private String email;
     @UpdateIgnore
+    @Column("user_type")
     private Integer usertype;
 }

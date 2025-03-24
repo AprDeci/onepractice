@@ -17,7 +17,7 @@ public class UserRegisterParamNotNullChainHandler implements UserRegisterCreateC
             throw new RuntimeException("密码不能为空");
         } else if (Objects.isNull(requestParam.getEmail())){
             throw new RuntimeException("邮箱不能为空");
-        } else if (Objects.isNull(requestParam.getUserType())){
+        } else if (Objects.isNull(requestParam.getUsertype())){
             throw new RuntimeException("用户类型不能为空");
         }
     }

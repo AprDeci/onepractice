@@ -1,7 +1,9 @@
 package top.aprdec.onepractice.service;
 
 import org.springframework.transaction.annotation.Transactional;
+import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
+import top.aprdec.onepractice.dto.resp.UserLoginRespDTO;
 import top.aprdec.onepractice.dto.resp.UserRegistRespDTO;
 
 public interface UserService {
@@ -13,7 +15,9 @@ public interface UserService {
     @Transactional(rollbackFor = Exception.class)
     UserRegistRespDTO register(UserRegistReqDTO requestparam);
 
-    void login(String username, String password);
+
+
+    UserLoginRespDTO login(UserLoginReqDTO requestparam);
 
     public void logout();
 }
