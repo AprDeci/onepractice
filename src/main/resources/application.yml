@@ -1,4 +1,3 @@
-
 spring:
   application:
     name: one-practice
@@ -21,6 +20,16 @@ spring:
           max-idle: 10
           min-idle: 0
           max-wait: -1ms
+  mail:
+    host: smtp.qq.com
+    username: 1263868407@qq.com
+    password: kpcvdvgmuoxhjecc
+    port: 465
+    ssl:
+      enabled: true
+    protocol: smtp
+    default-encoding: UTF-8
+
 easy-query:
   database: mysql
   name-conversion: underlined

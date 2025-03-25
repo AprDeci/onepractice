@@ -53,6 +53,14 @@ public class RedisUtil {
         return redisTemplate.opsForValue().setIfAbsent(key, value);
     }
 
+    public Boolean setNx(String key, Object value, long time, TimeUnit unit) {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, time, unit);
+    }
+
+    public Boolean setNx(String key, Object value, long time) {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, time, TimeUnit.SECONDS);
+    }
+
     public boolean expire(String key, long time, TimeUnit unit) {
         Boolean ret = redisTemplate.expire(key, time, unit);
         return ret != null && ret;

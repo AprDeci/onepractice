@@ -16,6 +16,7 @@ import top.aprdec.onepractice.dto.resp.UserLoginRespDTO;
 import top.aprdec.onepractice.dto.resp.UserRegistRespDTO;
 import top.aprdec.onepractice.eenum.UserChainMarkEnum;
 import top.aprdec.onepractice.entity.UserDO;
+import top.aprdec.onepractice.service.CaptchaService;
 import top.aprdec.onepractice.service.UserService;
 import top.aprdec.onepractice.util.BeanUtil;
 
@@ -31,6 +32,7 @@ public class UserServiceimpl implements UserService {
     private final  RedissonClient redissonClient;
     private final RBloomFilter<String> userRegisterCachePenetrationFilter;
     private final AbstractChainContext<UserRegistReqDTO> abstractChainContext;
+    private final CaptchaService captchaService;
 
 
     public Boolean hasUsername(String username){
@@ -47,6 +49,10 @@ public class UserServiceimpl implements UserService {
         //    TODO:过滤器链
         abstractChainContext.handler(UserChainMarkEnum.USER_REGISTER_FILTER.name(),requestparam);
         RLock rlock =redissonClient.getLock(LOCK_USER_REGISTER + requestparam.getUsername());
+        Boolean checkcaptcha = captchaService.checkEmailCaptcha(requestparam.getEmail(),requestparam.getCaptchacode());
+        if(!checkcaptcha){
+            throw new RuntimeException("验证码错误");
+        }
         boolean trylock = rlock.tryLock();
         if(!trylock){
             throw new RuntimeException("用户名已存在");

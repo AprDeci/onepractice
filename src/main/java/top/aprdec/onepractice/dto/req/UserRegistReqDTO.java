@@ -12,5 +12,7 @@ public class UserRegistReqDTO {
 
     private String email;
 
+    private String captchacode;
+
     private Integer usertype;
 }

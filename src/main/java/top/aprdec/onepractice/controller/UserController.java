@@ -11,6 +11,7 @@ import top.aprdec.onepractice.commmon.AResult;
 import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
 import top.aprdec.onepractice.dto.resp.UserLoginRespDTO;
+import top.aprdec.onepractice.service.CaptchaService;
 import top.aprdec.onepractice.service.UserService;
 
 @RestController
