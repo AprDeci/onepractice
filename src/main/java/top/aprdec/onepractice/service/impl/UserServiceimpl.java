@@ -46,7 +46,6 @@ public class UserServiceimpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public UserRegistRespDTO register(UserRegistReqDTO requestparam) {
-        //    TODO:过滤器链
         abstractChainContext.handler(UserChainMarkEnum.USER_REGISTER_FILTER.name(),requestparam);
         RLock rlock =redissonClient.getLock(LOCK_USER_REGISTER + requestparam.getUsername());
         Boolean checkcaptcha = captchaService.checkEmailCaptcha(requestparam.getEmail(),requestparam.getCaptchacode());
