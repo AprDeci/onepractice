@@ -28,7 +28,8 @@ public class EmailUtil {
             throw new RuntimeException("创建邮件失败");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("邮件编码不支持");
+        } catch (Exception e) {
+            throw new RuntimeException("邮件发送错误"+e.getMessage());
         }
-
     }
 }

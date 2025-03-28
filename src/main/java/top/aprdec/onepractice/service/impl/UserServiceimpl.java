@@ -12,10 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 import top.aprdec.onepractice.designpattern.chain.AbstractChainContext;
 import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
+import top.aprdec.onepractice.dto.resp.UserInfoRespDTO;
 import top.aprdec.onepractice.dto.resp.UserLoginRespDTO;
 import top.aprdec.onepractice.dto.resp.UserRegistRespDTO;
 import top.aprdec.onepractice.eenum.UserChainMarkEnum;
 import top.aprdec.onepractice.entity.UserDO;
+import top.aprdec.onepractice.entity.proxy.UserDOProxy;
 import top.aprdec.onepractice.service.CaptchaService;
 import top.aprdec.onepractice.service.UserService;
 import top.aprdec.onepractice.util.BeanUtil;
@@ -113,6 +115,24 @@ public class UserServiceimpl implements UserService {
     public void logout() {
 
     }
+
+    @Override
+    public UserInfoRespDTO getUserInfoById(Long id){
+        UserDO userDO = easyEntityQuery.queryable(UserDO.class)
+                .where(u -> u.id().eq(id))
+                .select(u -> new UserDOProxy()
+                        .id().set(u.id())
+                        .username().set(u.username())
+                        .usertype().set(u.usertype())
+                ).firstOrNull();
+        if(userDO != null){
+            return new UserInfoRespDTO(userDO.getUsername(),userDO.getUsertype());
+        }else{
+            throw new RuntimeException("用户不存在");
+        }
+    }
+
+
 }
 
 

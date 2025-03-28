@@ -24,7 +24,14 @@ public class QuestionServiceimpl implements QuestionService {
         return questions;
     }
 
-    public List<QuestionsDO> getQuestionByPaperIdAndType(Integer paperId,Integer type) {
-        return null;
+    @Override
+    public List<QuestionsDO> getQuestionByPaperIdAndType(Integer paperId,String type) {
+        List<QuestionsDO> list = easyEntityQuery.queryable(QuestionsDO.class)
+                .where(q -> {
+                    q.paperId().eq(paperId);
+                    q.and(()->q.questionType().eq(type));
+                })
+                .toList();
+        return list;
     }
 }

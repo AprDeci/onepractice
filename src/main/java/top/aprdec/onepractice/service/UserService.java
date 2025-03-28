@@ -3,6 +3,7 @@ package top.aprdec.onepractice.service;
 import org.springframework.transaction.annotation.Transactional;
 import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
+import top.aprdec.onepractice.dto.resp.UserInfoRespDTO;
 import top.aprdec.onepractice.dto.resp.UserLoginRespDTO;
 import top.aprdec.onepractice.dto.resp.UserRegistRespDTO;
 
@@ -20,4 +21,6 @@ public interface UserService {
     UserLoginRespDTO login(UserLoginReqDTO requestparam);
 
     public void logout();
+
+    UserInfoRespDTO getUserInfoById(Long id);
 }

@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface QuestionService {
     List<QuestionsDO> getQuestionByPaperId(Integer paperId);
+
+    List<QuestionsDO> getQuestionByPaperIdAndType(Integer paperId, String type);
 }

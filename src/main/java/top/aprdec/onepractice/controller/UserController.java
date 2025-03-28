@@ -1,5 +1,6 @@
 package top.aprdec.onepractice.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import top.aprdec.onepractice.commmon.AResult;
 import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
+import top.aprdec.onepractice.dto.resp.UserInfoRespDTO;
 import top.aprdec.onepractice.dto.resp.UserLoginRespDTO;
 import top.aprdec.onepractice.service.CaptchaService;
 import top.aprdec.onepractice.service.UserService;
@@ -22,8 +24,10 @@ public class UserController {
     private final UserService userService;
 
     @RequestMapping("/info")
-    public String getUserInfo(){
-        return "1";
+    public AResult getUserInfoByid(){
+        long loginIdAsLong = StpUtil.getLoginIdAsLong();
+        UserInfoRespDTO userinfo = userService.getUserInfoById(loginIdAsLong);
+        return AResult.success(userinfo);
     }
 
     @PostMapping("/register")

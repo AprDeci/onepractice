@@ -17,7 +17,8 @@ public class CaptchaController {
 
     @GetMapping("/email")
     public AResult getEmailCaptcha(@RequestParam String email){
-        captchaService.getEmailCaptcha(email);
-        return AResult.success();
+        Boolean result = captchaService.getEmailCaptcha(email);
+        if(result) return AResult.success();
+        else return AResult.error(10002, "发送失败");
     }
 }

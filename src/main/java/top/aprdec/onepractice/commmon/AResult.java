@@ -19,5 +19,9 @@ public final class AResult<T> {
         return new AResult<>(200,"success" ,null);
     }
 
+    public static <T> AResult<T> error(Integer code,String msg){
+        return new AResult<>(code,msg,null);
+    }
+
 
 }

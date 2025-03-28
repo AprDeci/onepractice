@@ -21,8 +21,17 @@ public enum UserTypeEnum {
         return this.usertypecode.toString();
     }
 
+
     @Override
     public String toString() {
         return strcode();
+    }
+    public static String  getUserTypeByCode(Integer code){
+        for (UserTypeEnum userTypeEnum : UserTypeEnum.values()) {
+            if (userTypeEnum.code().equals(code)) {
+                return userTypeEnum.name();
+            }
+        }
+        return "NORMAL";
     }
 }
