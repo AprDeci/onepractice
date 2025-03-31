@@ -60,7 +60,7 @@ public class UserServiceimpl implements UserService {
         }
         try {
             try {
-                log.info(BeanUtil.convert(requestparam, UserDO.class).toString());
+                requestparam.setEmail(requestparam.getEmail().toLowerCase());
                 long inserted = easyEntityQuery.insertable(BeanUtil.convert(requestparam, UserDO.class)).executeRows();
                 if (inserted < 1) {
                     throw new RuntimeException("注册失败");
@@ -78,7 +78,6 @@ public class UserServiceimpl implements UserService {
 
     @Override
     public UserLoginRespDTO login(UserLoginReqDTO requestparam) {
-        log.info(requestparam.toString());
         String usernameorEmail = requestparam.getUsernameorEmail();
         boolean emailflag = false;
         for(char c: usernameorEmail.toCharArray()){
@@ -88,6 +87,7 @@ public class UserServiceimpl implements UserService {
         }
         String username;
         if(emailflag){
+            requestparam.setUsernameorEmail(requestparam.getUsernameorEmail().toLowerCase());
             username = Optional.ofNullable(easyEntityQuery.queryable(UserDO.class)
                     .where(u -> u.email().eq(usernameorEmail))
                     .firstOrNull())
@@ -124,9 +124,10 @@ public class UserServiceimpl implements UserService {
                         .id().set(u.id())
                         .username().set(u.username())
                         .usertype().set(u.usertype())
+                        .email().set(u.email())
                 ).firstOrNull();
         if(userDO != null){
-            return new UserInfoRespDTO(userDO.getUsername(),userDO.getUsertype());
+            return new UserInfoRespDTO(userDO.getUsername(),userDO.getUsertype(),userDO.getEmail());
         }else{
             throw new RuntimeException("用户不存在");
         }

@@ -1,10 +1,15 @@
 package top.aprdec.onepractice.entity.questionsubentity;
 
 import lombok.Data;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 
 @Data
-public class readingOptions {
+public class readingOptions implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 2044533065787678305L;
     private List<Question> questions;
 
     @Data

@@ -8,7 +8,6 @@ import top.aprdec.onepractice.eenum.PaperTypeEnum;
 import top.aprdec.onepractice.entity.QuestionsDO;
 import top.aprdec.onepractice.entity.UserDO;
 import top.aprdec.onepractice.entity.proxy.UserDOProxy;
-import top.aprdec.onepractice.entity.questionsubentity.matchingdata;
 import top.aprdec.onepractice.entity.questionsubentity.option;
 
 import java.util.List;
@@ -44,7 +43,7 @@ public class EasyQueryTests {
     @Test
     void testsm(){
         System.out.println(PaperTypeEnum.CET4.getType());
-        System.out.println(PaperTypeEnum.CET6.getvalue());
+        System.out.println(PaperTypeEnum.CET6.getType());
     }
 
 }

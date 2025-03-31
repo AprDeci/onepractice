@@ -5,15 +5,14 @@ import lombok.Data;
 import com.easy.query.core.annotation.Column;
 import com.easy.query.core.annotation.Table;
 import com.easy.query.core.annotation.EntityProxy;
-import top.aprdec.onepractice.entity.abstractDO.BaseDO;
 import top.aprdec.onepractice.entity.proxy.QuestionsDOProxy;
 import top.aprdec.onepractice.entity.questionsubentity.String2ComplexType;
-import top.aprdec.onepractice.entity.questionsubentity.matchingdata;
 import top.aprdec.onepractice.entity.questionsubentity.option;
-import top.aprdec.onepractice.entity.questionsubentity.wordbank;
+import top.aprdec.onepractice.entity.questionsubentity.readitem;
 import top.aprdec.onepractice.util.JsonConverter;
 
-import java.lang.Object;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -25,8 +24,9 @@ import java.util.List;
 @Data
 @Table(value = "questions")
 @EntityProxy
-public class QuestionsDO implements ProxyEntityAvailable<QuestionsDO , QuestionsDOProxy> {
-
+public class QuestionsDO implements ProxyEntityAvailable<QuestionsDO , QuestionsDOProxy>,Serializable {
+    @Serial
+    private static final long serialVersionUID = -5346636912806568052L;
     @Column(primaryKey = true, value = "question_id")
     private Integer questionId;
 
@@ -41,6 +41,7 @@ public class QuestionsDO implements ProxyEntityAvailable<QuestionsDO , Questions
      * A/B/C等部分
      */
     private String sectionName;
+//    writing,listening,cloza,matching,reading,translation
 
     private String questionType;
 
@@ -57,6 +58,12 @@ public class QuestionsDO implements ProxyEntityAvailable<QuestionsDO , Questions
     private String correctAnswer;
 
     /**
+     * 阅读理解分题专用
+     */
+    @Column(conversion = JsonConverter.class, complexPropType = String2ComplexType.class)
+    private List<String> readingSplitQuestion;
+
+    /**
      * 选择题选项，格式: [{"label":"A","content":"选项内容"},...]
      */
     @Column(conversion = JsonConverter.class,complexPropType = option.class)
@@ -71,8 +78,9 @@ public class QuestionsDO implements ProxyEntityAvailable<QuestionsDO , Questions
     /**
      * 匹配题数据，格式: {"paragraphs": {"A":"段落内容",...}, "items": [{"id":1,"content":"匹配项内容"},...]}
      */
-    @Column(conversion = JsonConverter.class)
-    private matchingdata matchingData;
+    @Column(conversion = JsonConverter.class, complexPropType = readitem.class)
+    private List<readitem> matchingData;
+
 
 
 }

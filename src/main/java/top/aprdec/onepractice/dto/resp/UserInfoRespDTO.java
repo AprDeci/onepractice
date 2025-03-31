@@ -8,4 +8,5 @@ import lombok.Data;
 public class UserInfoRespDTO {
     String username;
     Integer userType;
+    String email;
 }

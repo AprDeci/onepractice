@@ -15,7 +15,4 @@ public enum PaperTypeEnum {
         this.type = type;
     }
 
-    public String getvalue(){
-        return this.type;
-    }
 }

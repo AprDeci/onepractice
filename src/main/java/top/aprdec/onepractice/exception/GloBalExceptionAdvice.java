@@ -9,9 +9,9 @@ import top.aprdec.onepractice.commmon.AResult;
 @RestControllerAdvice
 public class GloBalExceptionAdvice {
     //全局异常处理
-    @ExceptionHandler(value = RuntimeException.class)
-    public AResult<Object> handleException(Exception e) {
-        return AResult.error(10001,e.getMessage());
-    }
+//    @ExceptionHandler(value = RuntimeException.class)
+//    public AResult<Object> handleException(Exception e) {
+//        return AResult.error(10001,e.getMessage());
+//    }
 
 }

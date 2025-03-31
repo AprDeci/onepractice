@@ -1,6 +1,7 @@
 package top.aprdec.onepractice.entity;
 
 import com.easy.query.core.proxy.ProxyEntityAvailable;
+import com.easy.query.core.proxy.ProxyEntityAvailable;
 import lombok.Data;
 import com.easy.query.core.annotation.Column;
 import com.easy.query.core.annotation.Table;
@@ -16,14 +17,14 @@ import top.aprdec.onepractice.entity.proxy.PaperDOProxy;
 @Data
 @Table(value = "papers")
 @EntityProxy
-public class PaperDO implements ProxyEntityAvailable<PaperDO, PaperDOProxy> {
+public class PaperDO implements ProxyEntityAvailable<PaperDO , PaperDOProxy> {
 
     @Column(primaryKey = true, value = "paper_id")
     private Integer paperId;
 
     private String paperName;
 
-    private String examYear;
+    private Integer examYear;
 
     private Integer examMonth;
 
@@ -34,7 +35,7 @@ public class PaperDO implements ProxyEntityAvailable<PaperDO, PaperDOProxy> {
      */
     private Integer totalTime;
 
-    private String paperType;
+    private String type;
 
 
 }
