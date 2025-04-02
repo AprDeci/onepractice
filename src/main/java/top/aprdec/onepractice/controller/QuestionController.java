@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import top.aprdec.onepractice.commmon.AResult;
+import top.aprdec.onepractice.dto.resp.AnswersRespDTO;
 import top.aprdec.onepractice.dto.resp.ExamQuestionRespDTO;
 import top.aprdec.onepractice.entity.QuestionsDO;
 import top.aprdec.onepractice.service.QuestionService;
@@ -39,6 +40,12 @@ public class QuestionController {
     public AResult getQuestionsByPaperIdSplitByPart(@RequestParam Integer Id){
         ExamQuestionRespDTO questionsByPaperIdSplitByPart = questionService.getQuestionsByPaperIdSplitByPart(Id);
         return AResult.success(questionsByPaperIdSplitByPart);
+    }
+
+    @GetMapping("/getAnswersByPaperId")
+    public AResult getAnswersByPaperId(@RequestParam Integer Id){
+        AnswersRespDTO dto = questionService.getAnswersByPaperId(Id);
+        return AResult.success(dto);
     }
 
 }

@@ -1,5 +1,6 @@
 package top.aprdec.onepractice.service;
 
+import top.aprdec.onepractice.dto.resp.AnswersRespDTO;
 import top.aprdec.onepractice.dto.resp.ExamQuestionRespDTO;
 import top.aprdec.onepractice.entity.QuestionsDO;
 
@@ -13,4 +14,6 @@ public interface QuestionService {
     List<QuestionsDO> getQuestionByPaperIdAndType(Integer paperId, String type);
 
     ExamQuestionRespDTO getQuestionsByPaperIdSplitByPart(Integer paperId);
+
+    AnswersRespDTO getAnswersByPaperId(Integer paperId);
 }

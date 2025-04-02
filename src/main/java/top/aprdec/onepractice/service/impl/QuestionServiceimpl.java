@@ -5,15 +5,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Service;
+import top.aprdec.onepractice.dto.resp.AnswersRespDTO;
 import top.aprdec.onepractice.dto.resp.ExamQuestionRespDTO;
 import top.aprdec.onepractice.dto.resp.subentity.QuestionPart;
 import top.aprdec.onepractice.entity.QuestionsDO;
+import top.aprdec.onepractice.entity.proxy.QuestionsDOProxy;
+import top.aprdec.onepractice.entity.questionsubentity.answer;
 import top.aprdec.onepractice.service.QuestionService;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -85,5 +85,20 @@ public class QuestionServiceimpl implements QuestionService {
         examQuestionRespDTO.setPaperId(paperId);
         examQuestionRespDTO.setQuestionParts(questionParts);
         return examQuestionRespDTO;
+    }
+
+    @Override
+    public AnswersRespDTO  getAnswersByPaperId(Integer paperId) {
+        List<answer> collect = easyEntityQuery.queryable(QuestionsDO.class)
+                .where(q -> q.paperId().eq(paperId))
+                .select(QuestionsDOProxy::correctAnswer)
+                .toList()
+                .stream().filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        AnswersRespDTO answersRespDTO = new AnswersRespDTO();
+        answersRespDTO.setAnswers(collect);
+        answersRespDTO.setPaperId(paperId);
+        return answersRespDTO;
     }
 }

@@ -7,6 +7,7 @@ import com.easy.query.core.annotation.Table;
 import com.easy.query.core.annotation.EntityProxy;
 import top.aprdec.onepractice.entity.proxy.QuestionsDOProxy;
 import top.aprdec.onepractice.entity.questionsubentity.String2ComplexType;
+import top.aprdec.onepractice.entity.questionsubentity.answer;
 import top.aprdec.onepractice.entity.questionsubentity.option;
 import top.aprdec.onepractice.entity.questionsubentity.readitem;
 import top.aprdec.onepractice.util.JsonConverter;
@@ -55,7 +56,8 @@ public class QuestionsDO implements ProxyEntityAvailable<QuestionsDO , Questions
     /**
      * 统一答案存储
      */
-    private String correctAnswer;
+    @Column(conversion = JsonConverter.class, complexPropType = answer.class)
+    private List<answer> correctAnswer;
 
     /**
      * 阅读理解分题专用
