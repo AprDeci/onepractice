@@ -9,6 +9,7 @@
         <relativePath/>
     </parent>
 
+    <packaging>jar</packaging>
 
     <groupId>top.aprdec</groupId>
     <artifactId>onepractice</artifactId>
@@ -134,6 +135,11 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                        </path>
+                        <path>
+                            <groupId>com.easy-query</groupId>
+                            <artifactId>sql-processor</artifactId>
+                            <version>${easy-query.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
