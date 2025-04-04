@@ -31,6 +31,10 @@ public class UserExamRecordDO implements Serializable {
 
     private Integer paperId;
 
+    private String paperType;
+
+    private String paperName;
+
     /**
      * 做题类型
      */
@@ -55,6 +59,11 @@ public class UserExamRecordDO implements Serializable {
      * 分数
      */
     private Integer score;
+
+    /**
+     * 总分
+     */
+    private Integer totalscore;
 
 
 }

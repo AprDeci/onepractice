@@ -14,6 +14,8 @@ public class RecordReqDTO {
 
     private Integer score;
 
+    private Integer totalscore;
+
     private Integer timespend;
 
 
