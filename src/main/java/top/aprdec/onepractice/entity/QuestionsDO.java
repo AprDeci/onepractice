@@ -83,6 +83,11 @@ public class QuestionsDO implements ProxyEntityAvailable<QuestionsDO , Questions
     @Column(conversion = JsonConverter.class, complexPropType = readitem.class)
     private List<readitem> matchingData;
 
+    /**
+     * 听力题音频链接
+     */
+    private String listenurl;
+
 
 
 }

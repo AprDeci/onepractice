@@ -1,7 +1,6 @@
 package top.aprdec.onepractice.entity;
 
 import com.easy.query.core.proxy.ProxyEntityAvailable;
-import com.easy.query.core.proxy.ProxyEntityAvailable;
 import lombok.Data;
 import com.easy.query.core.annotation.Column;
 import com.easy.query.core.annotation.Table;
