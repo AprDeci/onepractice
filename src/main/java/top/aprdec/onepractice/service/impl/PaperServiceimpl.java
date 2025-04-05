@@ -1,15 +1,15 @@
 package top.aprdec.onepractice.service.impl;
 
-import com.alibaba.druid.sql.PagerUtils;
 import com.easy.query.api.proxy.client.EasyEntityQuery;
+import com.easy.query.core.api.pagination.EasyPageResult;
+import com.easy.query.core.util.EasyStringUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import top.aprdec.onepractice.dto.req.PaperqueryDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
-import top.aprdec.onepractice.dto.resp.proxy.PaperIntroRespDTOProxy;
+import top.aprdec.onepractice.dto.resp.PaperdataRespDTO;
 import top.aprdec.onepractice.entity.PaperDO;
-import top.aprdec.onepractice.entity.QuestionsDO;
-import top.aprdec.onepractice.entity.proxy.PaperDOProxy;
 import top.aprdec.onepractice.service.PaperService;
 import top.aprdec.onepractice.util.PaperUtil;
 
@@ -26,6 +26,25 @@ public class PaperServiceimpl implements PaperService {
     @Override
     public List<PaperDO> getAllPapers() {
         return easyEntityQuery.queryable(PaperDO.class).toList();
+    }
+
+    @Override
+    public PaperdataRespDTO getPapersByPageAndSize(Integer page, Integer size) {
+        EasyPageResult<PaperDO> pageResult = easyEntityQuery.queryable(PaperDO.class).toPageResult(page, size);
+        PaperdataRespDTO paperdataRespDTO = new PaperdataRespDTO();
+        paperdataRespDTO.setPapers(pageResult.getData());
+        paperdataRespDTO.setTotal(pageResult.getTotal());
+        return paperdataRespDTO;
+    }
+
+    @Override
+    public EasyPageResult<PaperDO> getPaperswithQuerysByPageAndSize(PaperqueryDTO querys) {
+        EasyPageResult<PaperDO> result = easyEntityQuery.queryable(PaperDO.class)
+                .where(p -> {
+                    p.type().eq(!EasyStringUtil.isEmpty(querys.getType()),querys.getType());
+                    p.examYear().eq(querys.getYear()!=null&&querys.getYear()!=0,querys.getYear());
+                }).toPageResult(querys.getPage(), querys.getSize());
+        return result;
     }
 
 

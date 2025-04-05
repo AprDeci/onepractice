@@ -65,5 +65,7 @@ public class UserExamRecordDO implements Serializable {
      */
     private Integer totalscore;
 
+    private Long timestamp;
+
 
 }

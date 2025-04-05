@@ -1,16 +1,17 @@
 package top.aprdec.onepractice.controller;
 
+import com.easy.query.core.api.pagination.EasyPageResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import top.aprdec.onepractice.commmon.AResult;
+import top.aprdec.onepractice.dto.req.PaperqueryDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
+import top.aprdec.onepractice.dto.resp.PaperdataRespDTO;
 import top.aprdec.onepractice.entity.PaperDO;
 import top.aprdec.onepractice.service.PaperService;
 
+import java.awt.print.Paper;
 import java.util.List;
 
 @Slf4j
@@ -25,6 +26,18 @@ public class PaperController {
     public AResult getallpaper() {
         List allPapers = paperService.getAllPapers();
         return AResult.success(allPapers);
+    }
+
+    @PostMapping("/page")
+    public AResult getPapersByPageandSize(@RequestBody Integer page,@RequestBody Integer size) {
+        PaperdataRespDTO result = paperService.getPapersByPageAndSize(page, size);
+        return AResult.success(result);
+    }
+
+    @PostMapping("/getPaperwithQuerys")
+    public AResult getPaperWithquerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
+        EasyPageResult<PaperDO> result = paperService.getPaperswithQuerysByPageAndSize(querys);
+        return AResult.success(result);
     }
 
     @GetMapping("/type")

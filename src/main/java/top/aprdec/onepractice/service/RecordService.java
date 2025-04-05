@@ -10,4 +10,6 @@ public interface RecordService {
 
     // 获取最近N天的记录
     List<UserExamRecordDO> getRecentRecords(int days);
+
+    void updateRecord(RecordReqDTO recordReqDTO, String recordId);
 }

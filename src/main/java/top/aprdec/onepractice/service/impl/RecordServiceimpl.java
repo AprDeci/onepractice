@@ -54,6 +54,7 @@ public class RecordServiceimpl implements RecordService {
         convert.setPaperName(name);
         convert.setUserId(LoginId);
         convert.setRecordId(uuid);
+        convert.setTimestamp(timestamp);
 //        插入redis 有效期30天
         redisUtil.set(key,convert,30*24*60*60);
     }
@@ -82,6 +83,44 @@ public class RecordServiceimpl implements RecordService {
 
         return result;
 
+    }
+
+    @Override
+    public void updateRecord(RecordReqDTO recordReqDTO, String recordId) {
+        long loginId = StpUtil.getLoginIdAsLong();
+
+        // 1. 构造模糊匹配的Key模式（根据recordId查找完整Key）
+        String pattern = String.format(RedisKeyConstant.USER_RECORD + "%d:*:%s", loginId, recordId);
+
+        // 2. 扫描匹配的Key（通常只有一个）
+        try (Cursor<String> cursor = redisTemplate.scan(
+                ScanOptions.scanOptions().match(pattern).count(1).build())) {
+
+            if (cursor.hasNext()) {
+                String fullKey = cursor.next();
+
+                // 3. 获取原记录
+                Object o = redisTemplate.opsForValue().get(fullKey);
+                if (o == null) {
+                    throw new RuntimeException("记录不存在或已过期");
+                }
+                UserExamRecordDO originalRecord = JSON.parseObject( o.toString(), UserExamRecordDO.class);
+
+                // 4. 更新字段（保留原时间戳和PaperInfo）
+                UserExamRecordDO updatedRecord = BeanUtil.convert(recordReqDTO, UserExamRecordDO.class);
+                updatedRecord.setUserId(loginId);
+                updatedRecord.setRecordId(recordId);
+                updatedRecord.setTimestamp(originalRecord.getTimestamp());
+                updatedRecord.setPaperName(originalRecord.getPaperName());
+                updatedRecord.setPaperType(originalRecord.getPaperType());
+
+                // 5. 重新存入Redis（获取原TTL并保持）
+                Long ttl = redisTemplate.getExpire(fullKey);
+                redisUtil.set(fullKey, updatedRecord, ttl != null ? ttl : 30 * 24 * 60 * 60);
+            } else {
+                throw new RuntimeException("未找到匹配的记录");
+            }
+        }
     }
 
 
