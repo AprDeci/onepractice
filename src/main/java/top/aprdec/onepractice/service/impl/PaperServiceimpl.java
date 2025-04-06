@@ -43,7 +43,7 @@ public class PaperServiceimpl implements PaperService {
                 .where(p -> {
                     p.type().eq(!EasyStringUtil.isEmpty(querys.getType()),querys.getType());
                     p.examYear().eq(querys.getYear()!=null&&querys.getYear()!=0,querys.getYear());
-                }).toPageResult(querys.getPage(), querys.getSize());
+                }).select(p -> p.FETCHER.allFields().questionCount()).toPageResult(querys.getPage(), querys.getSize());
         return result;
     }
 

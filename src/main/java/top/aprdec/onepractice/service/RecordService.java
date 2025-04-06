@@ -8,8 +8,9 @@ import java.util.List;
 public interface RecordService {
     void addRecord(RecordReqDTO recordReqDTO);
 
+
     // 获取最近N天的记录
-    List<UserExamRecordDO> getRecentRecords(int days);
+    List<UserExamRecordDO> getRecentRecords(int days, int pageNum, int pageSize);
 
     void updateRecord(RecordReqDTO recordReqDTO, String recordId);
 }

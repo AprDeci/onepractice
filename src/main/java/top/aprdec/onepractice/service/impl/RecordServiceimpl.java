@@ -5,10 +5,10 @@ import com.alibaba.fastjson2.JSON;
 import com.easy.query.api.proxy.client.EasyEntityQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Service;
+import top.aprdec.onepractice.cache.FastJson2JsonRedisSerializer;
 import top.aprdec.onepractice.commmon.constant.RedisKeyConstant;
 import top.aprdec.onepractice.dto.req.RecordReqDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
@@ -20,7 +20,9 @@ import top.aprdec.onepractice.util.RedisUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 用户做题记录 暂时不考虑数据库存储
@@ -34,7 +36,9 @@ public class RecordServiceimpl implements RecordService {
 
     private final RedisUtil redisUtil;
 
-    private final RedisTemplate<String,Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private final StringRedisTemplate stringRedisTemplate;
 
     private final PaperService paperService;
 
@@ -42,85 +46,125 @@ public class RecordServiceimpl implements RecordService {
 
     @Override
     public void addRecord(RecordReqDTO recordReqDTO) {
-        long LoginId = StpUtil.getLoginIdAsLong();
+        long loginId = StpUtil.getLoginIdAsLong();
         String uuid = UUID.randomUUID().toString();
-        long timestamp = System.currentTimeMillis() / 1000;
-        String key = String.format(RedisKeyConstant.USER_RECORD+"%d:%d:%s",LoginId,timestamp,uuid);
+        long timestamp = System.currentTimeMillis();
+
+        String recordKey = String.format(RedisKeyConstant.USER_RECORD+"%d:%s", loginId, uuid);
+
+
         UserExamRecordDO convert = BeanUtil.convert(recordReqDTO, UserExamRecordDO.class);
-//        paperinfo 会存入缓存
+
         PaperIntroRespDTO paperIntro = paperService.getPaperIntro(convert.getPaperId());
-        String name = String.format("%s年%s月%s", paperIntro.getExamYear(),paperIntro.getExamMonth(),paperIntro.getPaperName());
+        String name = String.format("%s年%s月%s", paperIntro.getExamYear(), paperIntro.getExamMonth(), paperIntro.getPaperName());
+
         convert.setPaperType(paperIntro.getPaperType());
         convert.setPaperName(name);
-        convert.setUserId(LoginId);
+        convert.setUserId(loginId);
         convert.setRecordId(uuid);
         convert.setTimestamp(timestamp);
-//        插入redis 有效期30天
-        redisUtil.set(key,convert,30*24*60*60);
+
+        // 使用事务保证原子性
+        redisTemplate.execute(new SessionCallback<List<Object>>() {
+            @Override
+            public List<Object> execute(RedisOperations operations) throws DataAccessException {
+                operations.multi();
+
+                // 1. 将记录详情存入String类型
+                operations.opsForValue().set(recordKey, convert, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
+
+                // 2. 将记录ID添加到Sorted Set，score使用时间戳
+                String sortedSetKey = RedisKeyConstant.USER_RECORD_SORTED_SET + loginId;
+                operations.opsForZSet().add(sortedSetKey, recordKey, timestamp);
+
+                // 3. 设置Sorted Set的过期时间
+                operations.expire(sortedSetKey, 30 * 24 * 60 * 60, TimeUnit.SECONDS);
+
+                return operations.exec();
+            }
+        });
     }
 
 
     // 获取最近N天的记录
     @Override
-    public List<UserExamRecordDO> getRecentRecords(int days) {
+    public List<UserExamRecordDO> getRecentRecords(int days, int pageNum, int pageSize) {
+        long loginId = StpUtil.getLoginIdAsLong();
         long minTimestamp = System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L;
-        long LoginId = StpUtil.getLoginIdAsLong();
-        String pattern = RedisKeyConstant.USER_RECORD+LoginId+":*";
+
+        String sortedSetKey = RedisKeyConstant.USER_RECORD_SORTED_SET + loginId;
+
+
+
+        // 使用ZREVRANGEBYSCORE获取指定时间范围内的记录（按时间倒序）
+        Set<String> recordKeys = stringRedisTemplate.opsForZSet().reverseRangeByScore(
+                sortedSetKey,
+                minTimestamp,
+                System.currentTimeMillis(),
+                (pageNum - 1) * pageSize,
+                pageSize
+        );
+
         List<UserExamRecordDO> result = new ArrayList<>();
 
-        try(Cursor<String> cursor = redisTemplate.scan(ScanOptions.scanOptions().match(pattern).count(100).build())){
-            while (cursor.hasNext()) {
-                String key = cursor.next();
-                System.out.println(key);
-//                检查时间戳是否超过了指定天数
-                if(Long.parseLong(key.split(":")[4])<minTimestamp){
-                    Object o = redisTemplate.opsForValue().get(key);
-                    UserExamRecordDO record = JSON.parseObject(o.toString(), UserExamRecordDO.class);
-                    result.add(record);
+        if (recordKeys != null && !recordKeys.isEmpty()) {
+
+
+            log.info("keys"+ recordKeys);
+            // 批量获取记录详情
+            List<Object> records = redisTemplate.opsForValue().multiGet(recordKeys);
+
+            log.info("recoids"+records.toString());
+                for (Object record : records) {
+                        result.add(JSON.parseObject(record.toString(), UserExamRecordDO.class));
                 }
-            }
         }
 
         return result;
-
     }
 
     @Override
     public void updateRecord(RecordReqDTO recordReqDTO, String recordId) {
         long loginId = StpUtil.getLoginIdAsLong();
 
-        // 1. 构造模糊匹配的Key模式（根据recordId查找完整Key）
-        String pattern = String.format(RedisKeyConstant.USER_RECORD + "%d:*:%s", loginId, recordId);
 
-        // 2. 扫描匹配的Key（通常只有一个）
-        try (Cursor<String> cursor = redisTemplate.scan(
-                ScanOptions.scanOptions().match(pattern).count(1).build())) {
+        String targetKey = String.format(RedisKeyConstant.USER_RECORD + "%d:%s", loginId, recordId);
 
-            if (cursor.hasNext()) {
-                String fullKey = cursor.next();
 
-                // 3. 获取原记录
-                Object o = redisTemplate.opsForValue().get(fullKey);
-                if (o == null) {
-                    throw new RuntimeException("记录不存在或已过期");
-                }
-                UserExamRecordDO originalRecord = JSON.parseObject( o.toString(), UserExamRecordDO.class);
-
-                // 4. 更新字段（保留原时间戳和PaperInfo）
-                UserExamRecordDO updatedRecord = BeanUtil.convert(recordReqDTO, UserExamRecordDO.class);
-                updatedRecord.setUserId(loginId);
-                updatedRecord.setRecordId(recordId);
-                updatedRecord.setTimestamp(originalRecord.getTimestamp());
-                updatedRecord.setPaperName(originalRecord.getPaperName());
-                updatedRecord.setPaperType(originalRecord.getPaperType());
-
-                // 5. 重新存入Redis（获取原TTL并保持）
-                Long ttl = redisTemplate.getExpire(fullKey);
-                redisUtil.set(fullKey, updatedRecord, ttl != null ? ttl : 30 * 24 * 60 * 60);
-            } else {
-                throw new RuntimeException("未找到匹配的记录");
-            }
+        if (!redisTemplate.hasKey(targetKey)) {
+            throw new RuntimeException("未找到指定的考试记录");
         }
+
+
+        UserExamRecordDO existingRecord = JSON.parseObject(
+                redisTemplate.opsForValue().get(targetKey).toString(),
+                UserExamRecordDO.class
+        );
+
+        // 准备更新后的数据
+        UserExamRecordDO updatedRecord = BeanUtil.convert(recordReqDTO, UserExamRecordDO.class);
+
+        // 获取试卷信息
+        PaperIntroRespDTO paperIntro = paperService.getPaperIntro(updatedRecord.getPaperId());
+        String name = String.format("%s年%s月%s",
+                paperIntro.getExamYear(),
+                paperIntro.getExamMonth(),
+                paperIntro.getPaperName());
+
+        // 设置更新后的属性（保留原有时间戳等关键信息）
+        updatedRecord.setPaperType(paperIntro.getPaperType());
+        updatedRecord.setPaperName(name);
+        updatedRecord.setUserId(loginId);
+        updatedRecord.setRecordId(recordId);
+        updatedRecord.setTimestamp(existingRecord.getTimestamp());
+
+        // 更新记录（Sorted Set不需要更新，因为key和score都没变）
+        redisTemplate.opsForValue().set(
+                targetKey,
+                updatedRecord,
+                30 * 24 * 60 * 60,
+                TimeUnit.SECONDS
+        );
     }
 
 

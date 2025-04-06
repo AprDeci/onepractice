@@ -7,4 +7,6 @@ public class RedisKeyConstant {
     public static final String CAPTCHA_EMAIL = "onepractice:captcha-service:email:";
 
     public static final String USER_RECORD = "onepractice:record:user:";
+
+    public static final String USER_RECORD_SORTED_SET = "user:record:sorted:";
 }

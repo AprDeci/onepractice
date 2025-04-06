@@ -27,7 +27,7 @@ public class RecordController {
 
     @GetMapping("/list")
     public AResult getRecordList(@RequestParam int days){
-        List<UserExamRecordDO> recentRecords = recordService.getRecentRecords(days);
+        List<UserExamRecordDO> recentRecords = recordService.getRecentRecords(days,1,10);
         return AResult.success(recentRecords);
     }
 
