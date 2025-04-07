@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import top.aprdec.onepractice.dto.req.RecordReqDTO;
+import top.aprdec.onepractice.eenum.CodeEnum;
 import top.aprdec.onepractice.eenum.UserTypeEnum;
 import top.aprdec.onepractice.entity.UserExamRecordDO;
 import top.aprdec.onepractice.util.BeanUtil;
@@ -28,7 +29,7 @@ class OnepracticeApplicationTests {
 
     @Test
     void testEnum(){
-        System.out.println(UserTypeEnum.VIP);
+        System.out.println(CodeEnum.PASSWORD_ERROR.getCode());
     }
 
 }
