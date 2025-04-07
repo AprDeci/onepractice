@@ -10,6 +10,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.aprdec.onepractice.designpattern.chain.AbstractChainContext;
+import top.aprdec.onepractice.dto.req.ResetPasswordReqDTO;
 import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
 import top.aprdec.onepractice.dto.resp.UserInfoRespDTO;
@@ -133,6 +134,17 @@ public class UserServiceimpl implements UserService {
         }
     }
 
+    @Override
+    public Boolean ResetPassword(ResetPasswordReqDTO dto) {
+        String email = dto.getEmail();
+        UserDO user = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(email)).firstNotNull();
+        user.setPassword(dto.getPassword());
+        long l = easyEntityQuery.updatable(user).executeRows();
+        if(l == 0){
+            throw new RuntimeException("修改失败");
+        }
+        return true;
+    }
 
 }
 

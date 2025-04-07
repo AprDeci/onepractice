@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.aprdec.onepractice.commmon.AResult;
+import top.aprdec.onepractice.dto.req.ResetPasswordReqDTO;
 import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
 import top.aprdec.onepractice.dto.resp.UserInfoRespDTO;
@@ -41,5 +42,12 @@ public class UserController {
     public AResult logout(){
         StpUtil.logout();
         return AResult.success();
+    }
+
+    @PostMapping("resetpassword")
+public AResult resetPassword(@RequestBody ResetPasswordReqDTO dto){
+        if (userService.ResetPassword(dto)){
+            return AResult.success();
+        }else return AResult.error(200, "修改失败");
     }
 }

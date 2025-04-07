@@ -55,21 +55,8 @@ public class EasyQueryTests {
 
     @Test
     void testgetanswer(){
-        AnswersRespDTO answersRespDTO = new AnswersRespDTO();
-        List<List<answer>> collect = easyEntityQuery.queryable(QuestionsDO.class)
-                .where(q -> q.paperId().eq(1))
-                .select(QuestionsDOProxy::correctAnswer)
-                .toList();
-
-// Filter out null lists and flatten the remaining lists into a single list
-        List<answer> allAnswers = collect.stream()
-                .filter(list -> list != null)  // Filter out null lists
-                .flatMap(List::stream)         // Flatten all lists into a stream of answers
-                .collect(Collectors.toList()); // Collect into a single list
-
-// Add all answers to the DTO
-        answersRespDTO.setAnswers(allAnswers);
-
-        System.out.println(answersRespDTO.getAnswers());
+        String email = "Luchen126@gmail.com";
+        long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(email)).count();
+        System.out.println(count);
     }
 }

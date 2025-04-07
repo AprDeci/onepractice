@@ -1,6 +1,7 @@
 package top.aprdec.onepractice.service;
 
 import org.springframework.transaction.annotation.Transactional;
+import top.aprdec.onepractice.dto.req.ResetPasswordReqDTO;
 import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
 import top.aprdec.onepractice.dto.resp.UserInfoRespDTO;
@@ -23,4 +24,6 @@ public interface UserService {
     public void logout();
 
     UserInfoRespDTO getUserInfoById(Long id);
+
+    Boolean ResetPassword(ResetPasswordReqDTO dto);
 }

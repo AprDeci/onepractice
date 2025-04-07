@@ -1,11 +1,13 @@
 package top.aprdec.onepractice.service.impl;
 
+import com.easy.query.api.proxy.client.EasyEntityQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import top.aprdec.onepractice.commmon.constant.RedisKeyConstant;
 import top.aprdec.onepractice.eenum.EmailTemplateEnum;
+import top.aprdec.onepractice.entity.UserDO;
 import top.aprdec.onepractice.service.CaptchaService;
 import top.aprdec.onepractice.util.EmailUtil;
 import top.aprdec.onepractice.util.RedisUtil;
@@ -22,6 +24,7 @@ import static top.aprdec.onepractice.eenum.EmailTemplateEnum.VERIFICATION_CODE_E
 public class CaptchaServiceimpl implements CaptchaService {
     private final EmailUtil emailutil;
     private final RedisUtil redisutil;
+    private final EasyEntityQuery easyEntityQuery;
 
     @Override
     public Boolean getEmailCaptcha(String email) {
@@ -75,6 +78,17 @@ public class CaptchaServiceimpl implements CaptchaService {
         }else{
             return false;
         }
+    }
+
+    @Override
+    public Boolean checkEmailCaptchawhenResetPassword(String email, String captcha) {
+        System.out.println("eeeee"+email);
+//        检查是否存在邮箱
+        long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(email)).count();
+        if(count==0){
+            throw new RuntimeException("邮箱不存在");
+        }
+        return checkEmailCaptcha(email,captcha);
     }
 
 }

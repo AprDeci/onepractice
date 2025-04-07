@@ -26,4 +26,9 @@ class OnepracticeApplicationTests {
 
     }
 
+    @Test
+    void testEnum(){
+        System.out.println(UserTypeEnum.VIP);
+    }
+
 }
