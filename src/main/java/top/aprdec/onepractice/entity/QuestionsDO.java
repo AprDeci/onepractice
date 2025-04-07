@@ -10,7 +10,7 @@ import top.aprdec.onepractice.entity.questionsubentity.String2ComplexType;
 import top.aprdec.onepractice.entity.questionsubentity.answer;
 import top.aprdec.onepractice.entity.questionsubentity.option;
 import top.aprdec.onepractice.entity.questionsubentity.readitem;
-import top.aprdec.onepractice.util.JsonConverter;
+import top.aprdec.onepractice.util.easyentity.JsonConverter;
 
 import java.io.Serial;
 import java.io.Serializable;

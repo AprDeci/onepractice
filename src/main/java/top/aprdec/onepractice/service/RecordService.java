@@ -12,5 +12,5 @@ public interface RecordService {
     // 获取最近N天的记录
     List<UserExamRecordDO> getRecentRecords(int days, int pageNum, int pageSize);
 
-    void updateRecord(RecordReqDTO recordReqDTO, String recordId);
+    void updateRecord(RecordReqDTO recordReqDTO);
 }

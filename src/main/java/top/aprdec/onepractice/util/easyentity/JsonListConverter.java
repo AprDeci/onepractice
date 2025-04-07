@@ -1,4 +1,4 @@
-package top.aprdec.onepractice.util;
+package top.aprdec.onepractice.util.easyentity;
 
 import com.alibaba.druid.support.json.JSONUtils;
 import com.easy.query.core.basic.extension.conversion.ValueConverter;

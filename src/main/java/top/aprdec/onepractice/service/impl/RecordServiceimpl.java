@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Service;
-import top.aprdec.onepractice.cache.FastJson2JsonRedisSerializer;
 import top.aprdec.onepractice.commmon.constant.RedisKeyConstant;
 import top.aprdec.onepractice.dto.req.RecordReqDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
@@ -124,44 +123,32 @@ public class RecordServiceimpl implements RecordService {
     }
 
     @Override
-    public void updateRecord(RecordReqDTO recordReqDTO, String recordId) {
+    public void updateRecord(RecordReqDTO recordReqDTO) {
         long loginId = StpUtil.getLoginIdAsLong();
-
-
+        long timestamp = System.currentTimeMillis();
+        String recordId = recordReqDTO.getRecordId();
         String targetKey = String.format(RedisKeyConstant.USER_RECORD + "%d:%s", loginId, recordId);
-
 
         if (!redisTemplate.hasKey(targetKey)) {
             throw new RuntimeException("未找到指定的考试记录");
         }
-
 
         UserExamRecordDO existingRecord = JSON.parseObject(
                 redisTemplate.opsForValue().get(targetKey).toString(),
                 UserExamRecordDO.class
         );
 
-        // 准备更新后的数据
-        UserExamRecordDO updatedRecord = BeanUtil.convert(recordReqDTO, UserExamRecordDO.class);
+        // 设置更新后的属性(时间戳,score,answer)
+        existingRecord.setTimestamp(timestamp);
+        existingRecord.setScore(recordReqDTO.getScore());
+        existingRecord.setAnswers(recordReqDTO.getAnswers());
+        existingRecord.setIsfinished(recordReqDTO.getIsfinished());
 
-        // 获取试卷信息
-        PaperIntroRespDTO paperIntro = paperService.getPaperIntro(updatedRecord.getPaperId());
-        String name = String.format("%s年%s月%s",
-                paperIntro.getExamYear(),
-                paperIntro.getExamMonth(),
-                paperIntro.getPaperName());
-
-        // 设置更新后的属性（保留原有时间戳等关键信息）
-        updatedRecord.setPaperType(paperIntro.getPaperType());
-        updatedRecord.setPaperName(name);
-        updatedRecord.setUserId(loginId);
-        updatedRecord.setRecordId(recordId);
-        updatedRecord.setTimestamp(existingRecord.getTimestamp());
 
         // 更新记录（Sorted Set不需要更新，因为key和score都没变）
         redisTemplate.opsForValue().set(
                 targetKey,
-                updatedRecord,
+                existingRecord,
                 30 * 24 * 60 * 60,
                 TimeUnit.SECONDS
         );

@@ -36,4 +36,10 @@ public class UserController {
     public AResult login(@RequestBody @Validated UserLoginReqDTO requestparam){
         return AResult.success(userService.login(requestparam));
     }
+
+    @PostMapping("/logout")
+    public AResult logout(){
+        StpUtil.logout();
+        return AResult.success();
+    }
 }

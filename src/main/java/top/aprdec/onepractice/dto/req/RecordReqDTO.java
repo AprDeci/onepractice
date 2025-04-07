@@ -4,6 +4,9 @@ import lombok.Data;
 
 @Data
 public class RecordReqDTO {
+
+    private String recordId;
+
     private Integer paperId;
 
     private String type;

@@ -1,14 +1,12 @@
-package top.aprdec.onepractice.util;
+package top.aprdec.onepractice.util.easyentity;
 
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONWriter;
-import com.easy.query.core.annotation.Nullable;
 import com.easy.query.core.basic.extension.complex.ComplexPropType;
 import com.easy.query.core.basic.extension.conversion.ValueConverter;
 import com.easy.query.core.metadata.ColumnMetadata;
 import com.easy.query.core.util.EasyStringUtil;
-import org.redisson.api.ObjectEncoding;
 import org.springframework.stereotype.Component;
 
 @Component

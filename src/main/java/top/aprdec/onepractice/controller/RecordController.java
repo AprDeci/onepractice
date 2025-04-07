@@ -31,4 +31,10 @@ public class RecordController {
         return AResult.success(recentRecords);
     }
 
+    @PostMapping("update")
+    public AResult updateRecord(@RequestBody RecordReqDTO dto){
+        recordService.updateRecord(dto);
+        return AResult.success();
+    }
+
 }
