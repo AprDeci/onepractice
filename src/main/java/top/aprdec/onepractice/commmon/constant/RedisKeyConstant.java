@@ -9,4 +9,6 @@ public class RedisKeyConstant {
     public static final String USER_RECORD = "onepractice:record:user:";
 
     public static final String USER_RECORD_SORTED_SET = "user:record:sorted:";
+
+    public static final String PAPER_VOTE_KEY = "paper:stats:";
 }

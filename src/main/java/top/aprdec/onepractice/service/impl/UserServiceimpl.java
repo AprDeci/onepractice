@@ -3,6 +3,7 @@ package top.aprdec.onepractice.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.easy.query.api.proxy.client.EasyEntityQuery;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
@@ -29,7 +30,7 @@ import static top.aprdec.onepractice.commmon.constant.RedisKeyConstant.LOCK_USER
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceimpl implements UserService {
     private final EasyEntityQuery easyEntityQuery;
     private final  RedissonClient redissonClient;
@@ -41,7 +42,8 @@ public class UserServiceimpl implements UserService {
     public Boolean hasUsername(String username){
         boolean hasUsername = userRegisterCachePenetrationFilter.contains(username);
         if(hasUsername){
-//            TODO:检查缓存层
+            long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.username().eq(username)).count();
+            if(count > 0) return false;
         }
         return true;
     }

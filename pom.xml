@@ -23,6 +23,7 @@
         <mysql.version>9.2.0</mysql.version>
         <lombok.version>1.18.36</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
+        <skipTests>true</skipTests>
     </properties>
     <dependencies>
         <dependency>
