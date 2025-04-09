@@ -14,7 +14,6 @@ import top.aprdec.onepractice.entity.voteentity.VoteStatisticsEntity;
 import top.aprdec.onepractice.service.VoteService;
 import top.aprdec.onepractice.util.RedisUtil;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
@@ -28,13 +27,14 @@ public class VoteServiceimpl implements VoteService {
     @Transactional
     @Override
     public void voteSubmit(VoteSubmitReqDTO dto){
-        Integer rating = dto.getRating();
+        System.out.println(dto);
+        Integer rating = dto.getVoteValue();
         if(rating < 1||rating>5){
             throw new RuntimeException("评分范围1-5");
         }
         Integer paperId = dto.getPaperId();
         long loginId = StpUtil.getLoginIdAsLong();
-        String redisKey = "vote:user:"+loginId+":paper:"+paperId;
+        String redisKey = "onepractice:vote:user:"+loginId+":paper:"+paperId;
         if(Boolean.TRUE.equals(redisUtil.haskey(redisKey))){
             throw new RuntimeException("已经投过票了");
         }
@@ -66,7 +66,7 @@ public class VoteServiceimpl implements VoteService {
     @Transactional
     public void updatePaperStatsInRedis(VoteSubmitReqDTO dto) {
         Integer paperId = dto.getPaperId();
-        Integer rating = dto.getRating();
+        Integer rating = dto.getVoteValue();
         if (paperId == null || rating == null || rating < 0) {
             throw new IllegalArgumentException("参数错误");
         }
@@ -81,13 +81,15 @@ public class VoteServiceimpl implements VoteService {
             if (paperRateMappingDO == null) {
                 PaperRateMappingDO newDO = new PaperRateMappingDO();
                 newDO.setPaperid(paperId);
+                newDO.setRating(rating);
+                newDO.setNumber(1);
                 long l = easyEntityQuery.insertable(newDO).executeRows();
                 if (l <= 0) {
                     throw new RuntimeException("insert paper rate mapping failed");
                 }
                 voteStats = new VoteStatisticsEntity();
-                voteStats.setNumber(0);
-                voteStats.setRatingnow(0);
+                voteStats.setNumber(1);
+                voteStats.setRatingnow(rating);
             }else {
                 voteStats = new VoteStatisticsEntity();
                 voteStats.setNumber(paperRateMappingDO.getNumber());
@@ -129,11 +131,15 @@ public class VoteServiceimpl implements VoteService {
     }
 
     @Override
-    public Integer getVoteByUserId(){
+    public VoteDO getVoteByUserIdandPaperId(VoteSubmitReqDTO dto){
         long userId = StpUtil.getLoginIdAsLong();
-        List<VoteDO> Votelist = entityQuery.queryable(VoteDO.class).where(v -> v.userId().eq(userId)).toList();
-        //TODO:返回试卷信息+评分+时间VO
-        return null;
+        Integer paperId = dto.getPaperId();
+        VoteDO voteDO = entityQuery.queryable(VoteDO.class).where(v -> {
+            v.userId().eq(userId);
+            v.and(() -> v.paperId().eq(paperId));
+        }).firstOrNull();
+
+        return voteDO;
     }
 
     @Override

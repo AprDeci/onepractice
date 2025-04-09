@@ -3,6 +3,7 @@ package top.aprdec.onepractice.service;
 import com.easy.query.core.api.pagination.EasyPageResult;
 import top.aprdec.onepractice.dto.req.PaperqueryDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
+import top.aprdec.onepractice.dto.resp.PaperWithRatingRespDTO;
 import top.aprdec.onepractice.dto.resp.PaperdataRespDTO;
 import top.aprdec.onepractice.entity.PaperDO;
 import top.aprdec.onepractice.entity.QuestionsDO;
@@ -17,6 +18,8 @@ public interface PaperService {
 
 
     EasyPageResult<PaperDO> getPaperswithQuerysByPageAndSize(PaperqueryDTO querys);
+
+    EasyPageResult<PaperWithRatingRespDTO> getPapersAndRatingWithQuerysByPageAndSize(PaperqueryDTO querys);
 
     PaperDO getPaperById(Integer id);
 

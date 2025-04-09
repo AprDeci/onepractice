@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import top.aprdec.onepractice.commmon.AResult;
 import top.aprdec.onepractice.dto.req.PaperqueryDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
+import top.aprdec.onepractice.dto.resp.PaperWithRatingRespDTO;
 import top.aprdec.onepractice.dto.resp.PaperdataRespDTO;
 import top.aprdec.onepractice.entity.PaperDO;
 import top.aprdec.onepractice.service.PaperService;
@@ -37,6 +38,12 @@ public class PaperController {
     @PostMapping("/getPaperwithQuerys")
     public AResult getPaperWithquerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
         EasyPageResult<PaperDO> result = paperService.getPaperswithQuerysByPageAndSize(querys);
+        return AResult.success(result);
+    }
+
+    @PostMapping("/getPaperandRatingWithQuerys")
+    public AResult getPaperandRatingWithQuerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
+        EasyPageResult<PaperWithRatingRespDTO> result = paperService.getPapersAndRatingWithQuerysByPageAndSize(querys);
         return AResult.success(result);
     }
 

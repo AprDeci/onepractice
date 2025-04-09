@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.aprdec.onepractice.commmon.AResult;
 import top.aprdec.onepractice.dto.req.VoteSubmitReqDTO;
+import top.aprdec.onepractice.entity.VoteDO;
 import top.aprdec.onepractice.service.VoteService;
 
 @RestController
@@ -28,8 +29,14 @@ public class VoteController {
     }
 
     @PostMapping("/ratingget")
-    public AResult getVoteByPaperId(@RequestBody Integer paperId) {
-        return AResult.success(voteService.getRatingByPaperId(paperId));
+    public AResult getVoteByPaperId(@RequestBody VoteSubmitReqDTO dto) {
+        return AResult.success(voteService.getRatingByPaperId(dto.getPaperId()));
+    }
+
+    @PostMapping("/ratinggetByuserIdandPaperId")
+    public AResult getVoteByUserId(@RequestBody VoteSubmitReqDTO dto) {
+        VoteDO voteByUserId = voteService.getVoteByUserIdandPaperId(dto);
+        return AResult.success(voteByUserId);
     }
 
 

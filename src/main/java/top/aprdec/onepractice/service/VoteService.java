@@ -3,6 +3,7 @@ package top.aprdec.onepractice.service;
 import org.springframework.transaction.annotation.Transactional;
 import top.aprdec.onepractice.dto.req.VoteSubmitReqDTO;
 import top.aprdec.onepractice.entity.PaperRateMappingDO;
+import top.aprdec.onepractice.entity.VoteDO;
 
 public interface VoteService {
 
@@ -16,7 +17,8 @@ public interface VoteService {
 
     Integer getVoteByUserIdAndPaperId(String paperId);
 
-    Integer getVoteByUserId();
+
+    VoteDO getVoteByUserIdandPaperId(VoteSubmitReqDTO dto);
 
     PaperRateMappingDO getRatingByPaperId(Integer paperId);
 }

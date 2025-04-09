@@ -8,9 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.aprdec.onepractice.dto.req.PaperqueryDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
+import top.aprdec.onepractice.dto.resp.PaperWithRatingRespDTO;
 import top.aprdec.onepractice.dto.resp.PaperdataRespDTO;
+import top.aprdec.onepractice.dto.resp.proxy.PaperWithRatingRespDTOProxy;
 import top.aprdec.onepractice.entity.PaperDO;
+import top.aprdec.onepractice.entity.PaperRateMappingDO;
 import top.aprdec.onepractice.service.PaperService;
+import top.aprdec.onepractice.service.VoteService;
 import top.aprdec.onepractice.util.PaperUtil;
 
 import java.util.List;
@@ -21,6 +25,7 @@ import java.util.Optional;
 @Slf4j
 public class PaperServiceimpl implements PaperService {
     private final EasyEntityQuery easyEntityQuery;
+    private final VoteService voteservice;
     private final PaperUtil paperUtil;
 
     @Override
@@ -45,6 +50,27 @@ public class PaperServiceimpl implements PaperService {
                     p.examYear().eq(querys.getYear()!=null&&querys.getYear()!=0,querys.getYear());
                 }).select(p -> p.FETCHER.allFields().questionCount()).toPageResult(querys.getPage(), querys.getSize());
         return result;
+    }
+
+    @Override
+    public EasyPageResult<PaperWithRatingRespDTO> getPapersAndRatingWithQuerysByPageAndSize(PaperqueryDTO querys) {
+        EasyPageResult<PaperWithRatingRespDTO> pageResult = easyEntityQuery.queryable(PaperDO.class).leftJoin(PaperRateMappingDO.class, (p, r) -> p.paperId().eq(r.paperid()))
+                .select((p, r) -> new PaperWithRatingRespDTOProxy()
+                        .paperId().set(p.paperId())
+                        .paperName().set(p.paperName())
+                        .examYear().set(p.examYear())
+                        .examMonth().set(p.examMonth())
+                        .version().set(p.version())
+                        .totalTime().set(p.totalTime())
+                        .type().set(p.type())
+                        .questionCount().set(p.questionCount())
+                        .rating().set(r.rating())
+                        .number().set(r.number()))
+                .where(p -> {
+                    p.type().eq(!EasyStringUtil.isEmpty(querys.getType()), querys.getType());
+                    p.examYear().eq(querys.getYear() != null && querys.getYear() != 0, querys.getYear());
+                }).toPageResult(querys.getPage(), querys.getSize());
+        return pageResult;
     }
 
 

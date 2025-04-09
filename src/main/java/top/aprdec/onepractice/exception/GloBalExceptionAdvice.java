@@ -11,10 +11,10 @@ import top.aprdec.onepractice.eenum.CodeEnum;
 @RestControllerAdvice
 public class GloBalExceptionAdvice {
     //全局异常处理
-    @ExceptionHandler(value = RuntimeException.class)
-    public AResult<Object> handleException(Exception e) {
-        return AResult.error(10001,e.getMessage());
-    }
+//    @ExceptionHandler(value = RuntimeException.class)
+//    public AResult<Object> handleException(Exception e) {
+//        return AResult.error(10001,e.getMessage());
+//    }
 
     @ExceptionHandler(value = NotLoginException.class)
 public AResult<Object> handleException(NotLoginException e) {
