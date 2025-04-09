@@ -1,10 +1,12 @@
 package top.aprdec.onepractice.entity;
 
 import com.easy.query.core.proxy.ProxyEntityAvailable;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import com.easy.query.core.annotation.Column;
 import com.easy.query.core.annotation.Table;
 import com.easy.query.core.annotation.EntityProxy;
+import lombok.NoArgsConstructor;
 import top.aprdec.onepractice.entity.abstractDO.BaseDO;
 import top.aprdec.onepractice.entity.proxy.PaperRateMappingDOProxy;
 
@@ -17,6 +19,8 @@ import top.aprdec.onepractice.entity.proxy.PaperRateMappingDOProxy;
 @Data
 @Table(value = "paper_rate_mapping")
 @EntityProxy
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaperRateMappingDO implements ProxyEntityAvailable<PaperRateMappingDO , PaperRateMappingDOProxy> {
 
     /**
