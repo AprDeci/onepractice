@@ -213,6 +213,7 @@ public class VoteServiceimpl implements VoteService {
             }
             if(!batchlist.isEmpty()) {
                 long l = easyEntityQuery.updatable(batchlist).executeRows();
+                successCount += l;
             }
         }catch (Exception e){
             log.error("同步数据失败",e);
