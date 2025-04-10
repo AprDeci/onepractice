@@ -11,6 +11,12 @@ import top.aprdec.onepractice.eenum.ErrorEnum;
 @RestControllerAdvice
 public class GloBalExceptionAdvice {
 
+    @ExceptionHandler(value=Exception.class)
+    public AResult<Object> handleException(Exception e) {
+        log.error("系统异常：", e);
+        return AResult.error(ErrorEnum.OPERATE_ERROR);
+    }
+
     @ExceptionHandler(value=GeneralBusinessException.class)
     public AResult<Object> handleException(GeneralBusinessException e) {
         return AResult.error(e.getErrorEnum());
