@@ -3,6 +3,7 @@ package top.aprdec.onepractice.commmon;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.aprdec.onepractice.eenum.ErrorEnum;
 
 @Data
 @AllArgsConstructor
@@ -21,6 +22,10 @@ public final class AResult<T> {
 
     public static <T> AResult<T> error(Integer code,String msg){
         return new AResult<>(code,msg,null);
+    }
+
+    public static <T> AResult<T> error(ErrorEnum errorEnum){
+        return new AResult<>(errorEnum.getCode(),errorEnum.getMsg(),null);
     }
 
 

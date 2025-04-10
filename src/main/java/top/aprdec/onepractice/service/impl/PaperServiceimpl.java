@@ -11,8 +11,10 @@ import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
 import top.aprdec.onepractice.dto.resp.PaperWithRatingRespDTO;
 import top.aprdec.onepractice.dto.resp.PaperdataRespDTO;
 import top.aprdec.onepractice.dto.resp.proxy.PaperWithRatingRespDTOProxy;
+import top.aprdec.onepractice.eenum.ErrorEnum;
 import top.aprdec.onepractice.entity.PaperDO;
 import top.aprdec.onepractice.entity.PaperRateMappingDO;
+import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.PaperService;
 import top.aprdec.onepractice.service.VoteService;
 import top.aprdec.onepractice.util.PaperUtil;
@@ -80,7 +82,7 @@ public class PaperServiceimpl implements PaperService {
                 .where(p -> p.paperId().eq(id))
                 .firstOrNull();
         return Optional.ofNullable(paperDO)
-                .orElseThrow(()->new RuntimeException("试卷不存在"));
+                .orElseThrow(()->new GeneralBusinessException(ErrorEnum.PARAM_IS_INVALID));
     }
 
 

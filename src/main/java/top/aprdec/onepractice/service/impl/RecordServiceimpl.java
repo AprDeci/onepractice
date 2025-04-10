@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import top.aprdec.onepractice.commmon.constant.RedisKeyConstant;
 import top.aprdec.onepractice.dto.req.RecordReqDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
+import top.aprdec.onepractice.eenum.ErrorEnum;
 import top.aprdec.onepractice.entity.UserExamRecordDO;
+import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.PaperService;
 import top.aprdec.onepractice.service.RecordService;
 import top.aprdec.onepractice.util.BeanUtil;
@@ -130,7 +132,7 @@ public class RecordServiceimpl implements RecordService {
         String targetKey = String.format(RedisKeyConstant.USER_RECORD + "%d:%s", loginId, recordId);
 
         if (!redisTemplate.hasKey(targetKey)) {
-            throw new RuntimeException("未找到指定的考试记录");
+            throw new GeneralBusinessException(ErrorEnum.PARAM_IS_INVALID);
         }
 
         UserExamRecordDO existingRecord = JSON.parseObject(

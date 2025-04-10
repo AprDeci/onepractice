@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.aprdec.onepractice.commmon.constant.RedisKeyConstant;
 import top.aprdec.onepractice.dto.req.VoteSubmitReqDTO;
+import top.aprdec.onepractice.eenum.ErrorEnum;
 import top.aprdec.onepractice.entity.PaperRateMappingDO;
 import top.aprdec.onepractice.entity.VoteDO;
 import top.aprdec.onepractice.entity.voteentity.VoteStatisticsEntity;
+import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.VoteService;
 import top.aprdec.onepractice.util.RedisUtil;
 
@@ -41,13 +43,13 @@ public class VoteServiceimpl implements VoteService {
         System.out.println(dto);
         Integer rating = dto.getVoteValue();
         if(rating < 1||rating>5){
-            throw new RuntimeException("评分范围1-5");
+            throw new GeneralBusinessException(ErrorEnum.PARAM_IS_INVALID);
         }
         Integer paperId = dto.getPaperId();
         long loginId = StpUtil.getLoginIdAsLong();
         String redisKey = "onepractice:vote:user:"+loginId+":paper:"+paperId;
         if(Boolean.TRUE.equals(redisUtil.haskey(redisKey))){
-            throw new RuntimeException("已经投过票了");
+            throw new GeneralBusinessException(ErrorEnum.REPEAT_OPERATION);
         }
 
         long count = easyEntityQuery.queryable(VoteDO.class).where(v -> {
@@ -55,7 +57,7 @@ public class VoteServiceimpl implements VoteService {
             v.and(() -> v.userId().eq(loginId));
         }).count();
         if(count>0){
-            throw new RuntimeException("已经投过票了");
+            throw new GeneralBusinessException(ErrorEnum.REPEAT_OPERATION);
         }
 
         VoteDO voteDO = new VoteDO();
@@ -79,7 +81,7 @@ public class VoteServiceimpl implements VoteService {
         Integer paperId = dto.getPaperId();
         Integer rating = dto.getVoteValue();
         if (paperId == null || rating == null || rating < 0) {
-            throw new IllegalArgumentException("参数错误");
+            throw new GeneralBusinessException(ErrorEnum.PARAM_IS_INVALID);
         }
 
         String statsKey = RedisKeyConstant.PAPER_VOTE_KEY + paperId;
@@ -96,7 +98,7 @@ public class VoteServiceimpl implements VoteService {
                 newDO.setNumber(1);
                 long l = easyEntityQuery.insertable(newDO).executeRows();
                 if (l <= 0) {
-                    throw new RuntimeException("insert paper rate mapping failed");
+                    throw new GeneralBusinessException(ErrorEnum.OPERATE_ERROR);
                 }
                 voteStats = new VoteStatisticsEntity();
                 voteStats.setNumber(1);

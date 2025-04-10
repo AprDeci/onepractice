@@ -7,7 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import top.aprdec.onepractice.commmon.constant.RedisKeyConstant;
 import top.aprdec.onepractice.eenum.EmailTemplateEnum;
+import top.aprdec.onepractice.eenum.ErrorEnum;
 import top.aprdec.onepractice.entity.UserDO;
+import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.CaptchaService;
 import top.aprdec.onepractice.util.EmailUtil;
 import top.aprdec.onepractice.util.RedisUtil;
@@ -29,7 +31,7 @@ public class CaptchaServiceimpl implements CaptchaService {
     @Override
     public Boolean getEmailCaptcha(String email) {
         if(StringUtils.isBlank(email)){
-            throw new RuntimeException("邮箱不能为空");
+            throw new GeneralBusinessException(ErrorEnum.PARAM_IS_BLANK);
         }
         String key = RedisKeyConstant.CAPTCHA_EMAIL + email;
         String captcha = String.format("%06d", ThreadLocalRandom.current().nextInt(1000000));
@@ -61,7 +63,7 @@ public class CaptchaServiceimpl implements CaptchaService {
                 return false;
             }
         } else {
-            throw new RuntimeException("验证码已发送，请稍后再试");
+            throw new GeneralBusinessException(ErrorEnum.EMAIL_SEND_WAIT);
         }
     }
 
@@ -86,7 +88,7 @@ public class CaptchaServiceimpl implements CaptchaService {
 //        检查是否存在邮箱
         long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(email)).count();
         if(count==0){
-            throw new RuntimeException("邮箱不存在");
+            throw new GeneralBusinessException(ErrorEnum.PARAM_IS_INVALID);
         }
         return checkEmailCaptcha(email,captcha);
     }

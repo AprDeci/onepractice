@@ -17,9 +17,11 @@ import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
 import top.aprdec.onepractice.dto.resp.UserInfoRespDTO;
 import top.aprdec.onepractice.dto.resp.UserLoginRespDTO;
 import top.aprdec.onepractice.dto.resp.UserRegistRespDTO;
+import top.aprdec.onepractice.eenum.ErrorEnum;
 import top.aprdec.onepractice.eenum.UserChainMarkEnum;
 import top.aprdec.onepractice.entity.UserDO;
 import top.aprdec.onepractice.entity.proxy.UserDOProxy;
+import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.CaptchaService;
 import top.aprdec.onepractice.service.UserService;
 import top.aprdec.onepractice.util.BeanUtil;
@@ -55,22 +57,22 @@ public class UserServiceimpl implements UserService {
         RLock rlock =redissonClient.getLock(LOCK_USER_REGISTER + requestparam.getUsername());
         Boolean checkcaptcha = captchaService.checkEmailCaptcha(requestparam.getEmail(),requestparam.getCaptchacode());
         if(!checkcaptcha){
-            throw new RuntimeException("验证码错误");
+            throw new GeneralBusinessException(ErrorEnum.CAPTCHA_ERROR);
         }
         boolean trylock = rlock.tryLock();
         if(!trylock){
-            throw new RuntimeException("用户名已存在");
+            throw new GeneralBusinessException(ErrorEnum.USERNAME_EXIST);
         }
         try {
             try {
                 requestparam.setEmail(requestparam.getEmail().toLowerCase());
                 long inserted = easyEntityQuery.insertable(BeanUtil.convert(requestparam, UserDO.class)).executeRows();
                 if (inserted < 1) {
-                    throw new RuntimeException("注册失败");
+                    throw new GeneralBusinessException(ErrorEnum.REGISTER_ERROR);
                 }
             } catch (Exception e) {
                 log.error("用户名{}重复注册", requestparam.getUsername());
-                throw new RuntimeException("用户名重复注册");
+                throw new GeneralBusinessException(ErrorEnum.USERNAME_EXIST);
             }
             userRegisterCachePenetrationFilter.add(requestparam.getUsername());
         }finally {
@@ -95,7 +97,7 @@ public class UserServiceimpl implements UserService {
                     .where(u -> u.email().eq(usernameorEmail))
                     .firstOrNull())
                     .map(UserDO::getUsername)
-                    .orElseThrow(()->new RuntimeException("用户不存在"));
+                    .orElseThrow(()->new GeneralBusinessException(ErrorEnum.USER_NOT_EXIST));
         }else {
             username = requestparam.getUsernameorEmail();
         }
@@ -110,7 +112,7 @@ public class UserServiceimpl implements UserService {
             UserLoginRespDTO result = new UserLoginRespDTO(userDO.getId(), userDO.getUsername(), userDO.getPassword(),tokenValue);
             return result;
         }
-        throw new RuntimeException("用户名不存在或密码错误");
+        throw new GeneralBusinessException(ErrorEnum.PASSWORD_OR_USER_ERROR);
 
     }
 
@@ -132,7 +134,7 @@ public class UserServiceimpl implements UserService {
         if(userDO != null){
             return new UserInfoRespDTO(userDO.getUsername(),userDO.getUsertype(),userDO.getEmail());
         }else{
-            throw new RuntimeException("用户不存在");
+            throw new GeneralBusinessException(ErrorEnum.USER_NOT_EXIST);
         }
     }
 
@@ -143,7 +145,7 @@ public class UserServiceimpl implements UserService {
         user.setPassword(dto.getPassword());
         long l = easyEntityQuery.updatable(user).executeRows();
         if(l == 0){
-            throw new RuntimeException("修改失败");
+            throw new GeneralBusinessException(ErrorEnum.OPERATE_ERROR);
         }
         return true;
     }

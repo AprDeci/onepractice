@@ -5,20 +5,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import top.aprdec.onepractice.commmon.AResult;
-import top.aprdec.onepractice.eenum.CodeEnum;
+import top.aprdec.onepractice.eenum.ErrorEnum;
 
 @Slf4j
 @RestControllerAdvice
 public class GloBalExceptionAdvice {
-    //全局异常处理
-//    @ExceptionHandler(value = RuntimeException.class)
-//    public AResult<Object> handleException(Exception e) {
-//        return AResult.error(10001,e.getMessage());
-//    }
+
+    @ExceptionHandler(value=GeneralBusinessException.class)
+    public AResult<Object> handleException(GeneralBusinessException e) {
+        return AResult.error(e.getErrorEnum());
+    }
+
 
     @ExceptionHandler(value = NotLoginException.class)
 public AResult<Object> handleException(NotLoginException e) {
-    return AResult.error(CodeEnum.NOTLOGIN_ERROR.getCode(), e.getMessage());
+    return AResult.error(ErrorEnum.TOKEN_INVALID);
     }
 
 }
