@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProperty scope="context" name="logName" source="logging.file.name"/>
+    <springProperty scope="context" name="logPath" source="logging.file.path"/>
+    <springProperty scope="context" name="logLevel" source="logging.level.root"/>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSSZ}] [%thread] %-5level %logger{36} [%line] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logPath}/${logName}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logPath}/${logName}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <MaxHistory>7</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSSZ}] [%thread] %-5level %logger{36} [%line]- %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- project default level -->
+    <logger name="top.aprdec.onepractice" level="${logLevel}" />
+    <!--log4jdbc -->
+    <logger name="jdbc.sqltiming" level="${logLevel}"/>
+    <!--<appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>10.16.0.18:5044</destination>
+        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder" />
+    </appender>-->
+
+    <root level="${logLevel}">
+        <appender-ref ref="console" />
+        <appender-ref ref="rollingFile" />
+        <!--<appender-ref ref="LOGSTASH"/>-->
+    </root>
+</configuration>
