@@ -1,0 +1,21 @@
+[2025-04-10 11:44:56.826+0800] [main] INFO  t.a.o.OnepracticeApplication [53]- Starting OnepracticeApplication using Java 21.0.5 with PID 37468 (D:\workspace\java\onepractice\target\classes started by p in D:\workspace\java\onepractice)
+[2025-04-10 11:44:56.828+0800] [main] INFO  t.a.o.OnepracticeApplication [658]- The following 1 profile is active: "dev"
+[2025-04-10 11:44:58.029+0800] [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [295]- Multiple Spring Data modules found, entering strict repository configuration mode
+[2025-04-10 11:44:58.034+0800] [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [143]- Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+[2025-04-10 11:44:58.105+0800] [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate [211]- Finished Spring Data repository scanning in 45 ms. Found 0 Redis repository interfaces.
+[2025-04-10 11:44:59.390+0800] [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [111]- Tomcat initialized with port 8080 (http)
+[2025-04-10 11:44:59.409+0800] [main] INFO  o.a.coyote.http11.Http11NioProtocol [173]- Initializing ProtocolHandler ["http-nio-8080"]
+[2025-04-10 11:44:59.411+0800] [main] INFO  o.a.catalina.core.StandardService [173]- Starting service [Tomcat]
+[2025-04-10 11:44:59.412+0800] [main] INFO  o.a.catalina.core.StandardEngine [173]- Starting Servlet engine: [Apache Tomcat/10.1.39]
+[2025-04-10 11:44:59.498+0800] [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] [173]- Initializing Spring embedded WebApplicationContext
+[2025-04-10 11:44:59.499+0800] [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext [301]- Root WebApplicationContext: initialization completed in 2620 ms
+[2025-04-10 11:44:59.896+0800] [main] INFO  org.redisson.Version [43]- Redisson 3.45.1
+[2025-04-10 11:45:00.435+0800] [redisson-netty-1-4] INFO  o.r.connection.ConnectionsHolder [132]- 1 connections initialized for 192.168.100.1/192.168.100.1:6379
+[2025-04-10 11:45:00.585+0800] [redisson-netty-1-19] INFO  o.r.connection.ConnectionsHolder [132]- 24 connections initialized for 192.168.100.1/192.168.100.1:6379
+[2025-04-10 11:45:00.637+0800] [main] INFO  t.a.o.config.RedissonConfig [23]- Redisson 已启动
+[2025-04-10 11:45:00.642+0800] [main] INFO  org.redisson.Version [43]- Redisson 3.45.1
+[2025-04-10 11:45:00.695+0800] [redisson-netty-5-4] INFO  o.r.connection.ConnectionsHolder [132]- 1 connections initialized for 192.168.100.1/192.168.100.1:6379
+[2025-04-10 11:45:00.822+0800] [redisson-netty-5-19] INFO  o.r.connection.ConnectionsHolder [132]- 24 connections initialized for 192.168.100.1/192.168.100.1:6379
+[2025-04-10 11:45:02.397+0800] [main] INFO  o.a.coyote.http11.Http11NioProtocol [173]- Starting ProtocolHandler ["http-nio-8080"]
+[2025-04-10 11:45:02.410+0800] [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer [243]- Tomcat started on port 8080 (http) with context path '/'
+[2025-04-10 11:45:02.424+0800] [main] INFO  t.a.o.OnepracticeApplication [59]- Started OnepracticeApplication in 6.193 seconds (process running for 6.866)

@@ -25,28 +25,6 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <skipTests>true</skipTests>
     </properties>
-    <profiles>
-        <profile>
-            <id>dev</id>
-            <properties>
-                <!--  标签名为自定义，和我们平时写properties一样，对应主yml文件的@runtime-profile@-->
-                <runtime-profile>dev</runtime-profile>
-            </properties>
-        </profile>
-        <profile>
-            <id>prod</id>
-            <properties>
-                <runtime-profile>prod</runtime-profile>
-            </properties>
-        </profile>
-        <profile>
-            <id>test</id>
-            <properties>
-                <runtime-profile>test</runtime-profile>
-            </properties>
-        </profile>
-    </profiles>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -149,16 +127,6 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>   <!--这里重点注意，找对自己的配置文件的目录进行修改，这里博主弄错了，导致兜了很大的圈-->
-                <!-- 会生效-->
-                <filtering>true</filtering>
-                <excludes>
-                    <exclude>keystore.p12</exclude>
-                </excludes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
