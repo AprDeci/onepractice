@@ -21,5 +21,7 @@ public class RecordReqDTO {
 
     private Integer timespend;
 
+    private Long hasspendtime;
+
 
 }

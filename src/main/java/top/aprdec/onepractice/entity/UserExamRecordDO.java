@@ -59,5 +59,7 @@ public class UserExamRecordDO implements Serializable {
 
     private Long timestamp;
 
+    private Long hasspendtime;
+
 
 }

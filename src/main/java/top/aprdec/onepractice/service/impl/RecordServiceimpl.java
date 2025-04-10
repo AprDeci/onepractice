@@ -145,6 +145,7 @@ public class RecordServiceimpl implements RecordService {
         existingRecord.setScore(recordReqDTO.getScore());
         existingRecord.setAnswers(recordReqDTO.getAnswers());
         existingRecord.setIsfinished(recordReqDTO.getIsfinished());
+        existingRecord.setHasspendtime(recordReqDTO.getHasspendtime());
 
 
         // 更新记录（Sorted Set不需要更新，因为key和score都没变）
