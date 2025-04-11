@@ -46,7 +46,7 @@ public class RecordServiceimpl implements RecordService {
 
 
     @Override
-    public void addRecord(RecordReqDTO recordReqDTO) {
+    public String addRecord(RecordReqDTO recordReqDTO) {
         long loginId = StpUtil.getLoginIdAsLong();
         String uuid = UUID.randomUUID().toString();
         long timestamp = System.currentTimeMillis();
@@ -84,6 +84,8 @@ public class RecordServiceimpl implements RecordService {
                 return operations.exec();
             }
         });
+//        返回recordid
+        return uuid;
     }
 
 

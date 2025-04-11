@@ -6,7 +6,7 @@ import top.aprdec.onepractice.entity.UserExamRecordDO;
 import java.util.List;
 
 public interface RecordService {
-    void addRecord(RecordReqDTO recordReqDTO);
+    String addRecord(RecordReqDTO recordReqDTO);
 
 
     // 获取最近N天的记录

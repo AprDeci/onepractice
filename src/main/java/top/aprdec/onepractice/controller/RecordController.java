@@ -21,8 +21,8 @@ public class RecordController {
     @PostMapping("/save")
     public AResult saveRecord(@RequestBody RecordReqDTO dto){
         log.info(dto.toString());
-        recordService.addRecord(dto);
-        return AResult.success();
+        String recordId = recordService.addRecord(dto);
+        return AResult.success(recordId);
     }
 
     @GetMapping("/list")
