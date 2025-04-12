@@ -19,6 +19,7 @@ public enum ErrorEnum {
     CAPTCHA_SEND_ERROR(20001,"验证码发送失败"),
     REGISTER_ERROR(20002,"注册失败"),
     OPERATE_ERROR(20003,"操作失败"),
+    SERVER_ERROR(20004,"服务器错误"),
 
 
 

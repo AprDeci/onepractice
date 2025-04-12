@@ -1,5 +1,6 @@
 package top.aprdec.onepractice.controller;
 
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ public class CaptchaController {
     private final CaptchaService captchaService;
 
     @GetMapping("/email")
-    public AResult getEmailCaptcha(@RequestParam String email){
+    public AResult getEmailCaptcha(@RequestParam @Email(message = "邮箱格式不正确") String email){
         Boolean result = captchaService.getEmailCaptcha(email);
         if(result) return AResult.success();
         else return AResult.error(ErrorEnum.CAPTCHA_SEND_ERROR);

@@ -2,8 +2,12 @@ package top.aprdec.onepractice.entity;
 
 import com.easy.query.core.annotation.*;
 import com.easy.query.core.proxy.ProxyEntityAvailable;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.FieldNameConstants;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.context.annotation.Primary;
 import top.aprdec.onepractice.entity.abstractDO.BaseDO;
 import top.aprdec.onepractice.entity.proxy.UserDOProxy;
@@ -19,9 +23,12 @@ import java.security.Key;
 public class UserDO extends BaseDO implements ProxyEntityAvailable<UserDO , UserDOProxy> {
     @Column(primaryKey = true)
     private Long id;
+
     private String username;
+
     @Encryption(strategy = AESEncryptionStrategy.class)
     private String password;
+
     @Encryption(strategy = AESEncryptionStrategy.class)
     private String email;
     @UpdateIgnore
