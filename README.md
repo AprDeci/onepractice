@@ -17,4 +17,6 @@
 ### Review页面
 ![Review页面](imgs/review.jpg)
 
+### 查词功能
+![查词功能](imgs/查单词.jpg)
 
