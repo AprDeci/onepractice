@@ -43,7 +43,7 @@ public class IdempotentAspect {
             throw new CommonException("Idempotent注解的keyPrefix不能为空");
         }
         StringBuilder sb = new StringBuilder();
-        sb.append(idempotent.keyPrefix()).append(idempotent.delimiter()).append(method.getName());
+        sb.append(idempotent.keyPrefix()).append(StpUtil.getLoginIdAsString()).append(idempotent.delimiter()).append(method.getName());
         final String lockKey = sb.toString();
         log.info(lockKey);
         System.out.println(idempotent.timeout());
