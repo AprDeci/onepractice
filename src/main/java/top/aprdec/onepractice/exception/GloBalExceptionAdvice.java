@@ -27,6 +27,11 @@ public class GloBalExceptionAdvice {
         return AResult.error(e.getErrorEnum());
     }
 
+    @ExceptionHandler(value=CommonException.class)
+    public AResult<Object> handleException(CommonException e) {
+        return AResult.error(500,e.getMessage());
+    }
+
 
     @ExceptionHandler(value = NotLoginException.class)
 public AResult<Object> handleException(NotLoginException e) {

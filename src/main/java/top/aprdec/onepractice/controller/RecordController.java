@@ -2,7 +2,9 @@ package top.aprdec.onepractice.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.client.protocol.Time;
 import org.springframework.web.bind.annotation.*;
+import top.aprdec.onepractice.Iinterface.Idempotent;
 import top.aprdec.onepractice.commmon.AResult;
 import top.aprdec.onepractice.dto.req.RecordReqDTO;
 import top.aprdec.onepractice.entity.UserExamRecordDO;
@@ -36,5 +38,7 @@ public class RecordController {
         recordService.updateRecord(dto);
         return AResult.success();
     }
+
+
 
 }
