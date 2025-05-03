@@ -36,3 +36,4 @@ application.yml
 src/main/java/top/aprdec/onepractice/commmon/constant/Cropto.java
 
 /logs
+EasyQueryPreviewSqlAction.java

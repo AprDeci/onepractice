@@ -46,6 +46,7 @@ public class RecaptchaUtil {
             return false;
         }
         RecaptchaResponse recaptchaResponse = response.getBody();
+        log.info("reCaptcha验证结果:"+recaptchaResponse);
         return recaptchaResponse.isSuccess() && recaptchaResponse.getScore() > 0.5;
     }
 

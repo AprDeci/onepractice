@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RestTemplateConfig {
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder){
+    public RestTemplate restTemplate(){
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(200);             // 最大连接数为 200
         connectionManager.setDefaultMaxPerRoute(20);    // 每个路由的最大连接数为 20

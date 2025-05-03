@@ -10,6 +10,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import top.aprdec.onepractice.Iinterface.ReuqireRecaptcha;
 import top.aprdec.onepractice.designpattern.chain.AbstractChainContext;
 import top.aprdec.onepractice.dto.req.ResetPasswordReqDTO;
 import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
@@ -82,6 +83,7 @@ public class UserServiceimpl implements UserService {
         }
 
     @Override
+    @ReuqireRecaptcha
     public UserLoginRespDTO login(UserLoginReqDTO requestparam) {
         String usernameorEmail = requestparam.getUsernameorEmail();
         boolean emailflag = false;
