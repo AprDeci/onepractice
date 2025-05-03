@@ -3,6 +3,8 @@ package top.aprdec.onepractice.service.handler.filter.user;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
+import top.aprdec.onepractice.eenum.ErrorEnum;
+import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.UserService;
 
 @Component
@@ -15,7 +17,7 @@ public class UserRegisterHasUsernameChainHandler implements UserRegisterCreateCh
     public void handler(UserRegistReqDTO requestParam) {
 //        如果返回false
         if (!userService.hasUsername(requestParam.getUsername())) {
-            throw new RuntimeException("用户名已存在");
+            throw new GeneralBusinessException(ErrorEnum.USERNAME_EXIST);
         }
     }
 

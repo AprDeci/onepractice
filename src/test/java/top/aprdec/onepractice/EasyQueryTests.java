@@ -1,24 +1,15 @@
 package top.aprdec.onepractice;
 
+import com.alibaba.fastjson2.JSON;
 import com.easy.query.api.proxy.client.EasyEntityQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import top.aprdec.onepractice.dto.resp.AnswersRespDTO;
-import top.aprdec.onepractice.dto.resp.proxy.AnswersRespDTOProxy;
 import top.aprdec.onepractice.eenum.PaperTypeEnum;
 import top.aprdec.onepractice.entity.QuestionsDO;
 import top.aprdec.onepractice.entity.UserDO;
-import top.aprdec.onepractice.entity.proxy.QuestionsDOProxy;
-import top.aprdec.onepractice.entity.proxy.UserDOProxy;
-import top.aprdec.onepractice.entity.questionsubentity.answer;
-import top.aprdec.onepractice.entity.questionsubentity.option;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @SpringBootTest
 public class EasyQueryTests {
@@ -58,5 +49,20 @@ public class EasyQueryTests {
         String email = "Luchen126@gmail.com";
         long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(email)).count();
         System.out.println(count);
+    }
+    @Test
+    void testMatchingJsonContent(){
+        QuestionsDO matching = easyEntityQuery.queryable(QuestionsDO.class)
+                .where(q -> {
+                            q.questionType().eq("matching");
+                            q.and(() -> {
+                                q.paperId().eq(20);
+                            });
+                        }
+                ).firstOrNull();
+        Object parse = JSON.parse(matching.getContent());
+
+        System.out.println(parse);
+
     }
 }

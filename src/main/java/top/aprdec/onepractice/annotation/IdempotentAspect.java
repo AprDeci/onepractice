@@ -3,9 +3,7 @@ package top.aprdec.onepractice.annotation;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.coyote.Request;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -16,8 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import top.aprdec.onepractice.Iinterface.Idempotent;
 import top.aprdec.onepractice.exception.CommonException;
-import top.aprdec.onepractice.exception.GeneralBusinessException;
-import top.aprdec.onepractice.util.RequestKeyGenerator;
 
 import java.lang.reflect.Method;
 

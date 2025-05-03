@@ -21,6 +21,7 @@ public class RecordController {
     private final RecordService recordService;
 
     @PostMapping("/save")
+    @Idempotent(timeout = 2)
     public AResult saveRecord(@RequestBody RecordReqDTO dto){
         log.info(dto.toString());
         String recordId = recordService.addRecord(dto);
@@ -34,6 +35,7 @@ public class RecordController {
     }
 
     @PostMapping("update")
+    @Idempotent(timeout = 2)
     public AResult updateRecord(@RequestBody RecordReqDTO dto){
         recordService.updateRecord(dto);
         return AResult.success();
