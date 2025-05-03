@@ -1,23 +1,16 @@
 package top.aprdec.onepractice.annotation;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import top.aprdec.onepractice.Iinterface.ReuqireRecaptcha;
 import top.aprdec.onepractice.dto.req.HasCaptchaToken;
 import top.aprdec.onepractice.exception.CommonException;
 import top.aprdec.onepractice.util.RecaptchaUtil;
-
-import java.util.Arrays;
-import java.util.Objects;
 
 @Aspect
 @Component
@@ -37,6 +30,7 @@ public class ReCaptchaAspect {
             if(!valid){
                 String errorMessage = signature.getMethod().getAnnotation(ReuqireRecaptcha.class).errorMessage();
                 throw new CommonException(errorMessage);
+                //TODO 低得分用户校验邮箱验证码
             }
         }else{
             throw new CommonException("参数错误");
