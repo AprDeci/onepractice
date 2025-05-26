@@ -4,6 +4,7 @@ import com.easy.query.api.proxy.client.EasyEntityQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import top.aprdec.onepractice.dto.resp.AnswersRespDTO;
 import top.aprdec.onepractice.dto.resp.ExamQuestionRespDTO;
@@ -61,6 +62,7 @@ public class QuestionServiceimpl implements QuestionService {
     }
 
     @Override
+    @Cacheable(cacheNames = "question",key = "#paperId")
     public ExamQuestionRespDTO getQuestionsByPaperIdSplitByPart(Integer paperId) {
         List<QuestionsDO> questions = getQuestionByPaperIdOrderd(paperId,ASC);
 

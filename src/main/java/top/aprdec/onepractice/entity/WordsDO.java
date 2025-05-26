@@ -19,7 +19,7 @@ import top.aprdec.onepractice.entity.proxy.WordsDOProxy;
 @EntityProxy
 public class WordsDO extends BaseDO implements ProxyEntityAvailable<WordsDO , WordsDOProxy> {
 
-    @Column(primaryKey = true, value = "id")
+    @Column(primaryKey = true,generatedKey = true, value = "id")
     private Long id;
 
     private String word;

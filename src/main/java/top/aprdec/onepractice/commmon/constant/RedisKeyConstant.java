@@ -11,4 +11,7 @@ public class RedisKeyConstant {
     public static final String USER_RECORD_SORTED_SET = "onepractice:user:record:sorted:";
 
     public static final String PAPER_VOTE_KEY = "onepractice:paper:stats:";
+
+//   用户收藏单词表
+    public static final String USER_SAVED_WORD_LIST = "onepractice:user:savedword:";
 }
