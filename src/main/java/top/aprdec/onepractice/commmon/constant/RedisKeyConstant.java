@@ -14,4 +14,6 @@ public class RedisKeyConstant {
 
 //   用户收藏单词表
     public static final String USER_SAVED_WORD_LIST = "onepractice:user:savedword:";
+    //    单词表
+    public static final String WORD = "onepractice:words:";
 }

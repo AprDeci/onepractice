@@ -12,12 +12,12 @@ import top.aprdec.onepractice.dto.req.UserSaveWordReqDTO;
 import top.aprdec.onepractice.entity.UserSavedWordsDO;
 import top.aprdec.onepractice.entity.WordsDO;
 import top.aprdec.onepractice.entity.proxy.UserSavedWordsDOProxy;
+import top.aprdec.onepractice.entity.proxy.WordsDOProxy;
 import top.aprdec.onepractice.exception.CommonException;
 import top.aprdec.onepractice.service.UserSavedWordService;
 import top.aprdec.onepractice.util.RedisUtil;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -29,38 +29,52 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
 
     //查询words表 ->无->插入words->插入save表
     //查询save表 ->有->插入save表
-    //TODO: 缓存
     @Transactional
     @Override
     public void addSavedWord(UserSaveWordReqDTO dto) {
         String word = dto.getWord();
-        log.info("word:{}",word);
         Long userId = StpUtil.getLoginIdAsLong();
-        WordsDO existingWord  = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
-        if (existingWord  == null) {
+        //检查用户收藏集缓存是否存在?
+        Boolean cached = redisTemplate.hasKey(RedisKeyConstant.USER_SAVED_WORD_LIST + userId);
+        if(!cached){
+            cacheUserSavedWords();
+        }
+        //检查缓存中是否有该单词
+        Boolean haswordKey = redisTemplate.hasKey(RedisKeyConstant.WORD + word);
+        WordsDO existingWord;
+        if(!haswordKey){
+            //无word 查看数据库
+             existingWord  = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
+        }else{
+            existingWord = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
+        }
+        if (existingWord == null) {
             //无word
             WordsDO wordsDO = new WordsDO();
             wordsDO.setWord(word);
+            // 创建word
             long wordid = easyEntityQuery.insertable(wordsDO).executeRows(true);
             UserSavedWordsDO userSavedWordsDO = new UserSavedWordsDO();
             userSavedWordsDO.setUserId(userId);
             userSavedWordsDO.setWordId(wordid);
             //插入mapping
             easyEntityQuery.insertable(userSavedWordsDO).executeRows();
+            //插入缓存
+            redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
+            redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word,wordsDO);
         }
-        if(existingWord  != null){
+        if(existingWord != null){
             //有word
-            Long wordid = existingWord .getId();
+            Long wordid = existingWord.getId();
             //判断是否已经收藏
-            UserSavedWordsDO hasexit = easyEntityQuery.queryable(UserSavedWordsDO.class).where(o -> {
-                o.userId().eq(userId);
-                o.and(() -> o.wordId().eq(wordid));
-            }).firstOrNull();
+            Boolean hasexit = redisTemplate.opsForSet().isMember(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
             if(hasexit == null) {
                 UserSavedWordsDO userSavedWordsDO = new UserSavedWordsDO();
                 userSavedWordsDO.setUserId(userId);
                 userSavedWordsDO.setWordId(wordid);
-                long l = easyEntityQuery.insertable(userSavedWordsDO).executeRows();
+                easyEntityQuery.insertable(userSavedWordsDO).executeRows();
+                redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
+                redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word,existingWord);
             }else{
                 throw new CommonException("该单词已经收藏过");
             }
@@ -70,21 +84,25 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
 
 //    检查用户是否收藏
     public Boolean hascollected(UserSaveWordReqDTO dto){
-//        先判断有无 无-插入word-为收藏 有-拿到ID-查询有无
+        //        先判断有无 无-插入word-为收藏 有-拿到ID-查询有无
         String word = dto.getWord();
         Long userId = StpUtil.getLoginIdAsLong();
+        //检查用户收藏集缓存是否存在?
+        Boolean cached = redisTemplate.hasKey(RedisKeyConstant.USER_SAVED_WORD_LIST + userId);
+        if(!cached){
+            cacheUserSavedWords();
+        }
+        //查看word缓存是否存在
+        WordsDO wordsDO;
+        wordsDO = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
+        if(wordsDO == null) {
 //       //查询word表是否有word 若无一定无
-        WordsDO existingword = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
-        if(existingword == null){
+            wordsDO = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
+        }
+        if(wordsDO == null){
             return false;
         }
-        UserSavedWordsDO saveword = easyEntityQuery.queryable(UserSavedWordsDO.class).where(o -> {
-            o.userId().eq(userId);
-            o.and(() -> {
-                o.wordId().eq(existingword.getId());
-            });
-        }).firstOrNull();
-        return saveword!=null;
+        return redisTemplate.opsForSet().isMember(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordsDO.getId());
     }
 
 //    用户登录缓存收藏表到Redis
@@ -94,12 +112,25 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
                 .select(u -> new UserSavedWordsDOProxy()
                         .wordId().set(u.wordId())
                         .userId().set(u.userId()))
-                .where(u -> u.userId().eq(14L))
+                .where(u -> u.userId().eq(userId))
                 .toList();
         if(!usersavewordList.isEmpty()){
             List<Long> wordIdList = usersavewordList.stream().map(UserSavedWordsDO::getWordId).toList();
             //过期时间和token时间一致
             redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+userId, wordIdList.toArray());
+        }
+    }
+//  单词表缓存
+    public void cacheAllWords(){
+        List<WordsDO> wordList = easyEntityQuery.queryable(WordsDO.class)
+                .select(w -> new WordsDOProxy()
+                        .id().set(w.id())
+                        .word().set(w.word()))
+                .toList();
+        if(!wordList.isEmpty()){
+            wordList.forEach(word -> {
+                redisTemplate.opsForValue().set(RedisKeyConstant.WORD+word.getWord(),word);
+            });
         }
     }
 
