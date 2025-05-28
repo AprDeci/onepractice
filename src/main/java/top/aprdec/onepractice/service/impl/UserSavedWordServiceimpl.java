@@ -4,6 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.easy.query.api.proxy.client.EasyEntityQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import top.aprdec.onepractice.service.UserSavedWordService;
 import top.aprdec.onepractice.util.RedisUtil;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -26,6 +29,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
     private final EasyEntityQuery easyEntityQuery;
     private final RedisTemplate redisTemplate;
     private final RedisUtil redisUtil;
+    private final RedissonClient redissonClient;
 
     //查询words表 ->无->插入words->插入save表
     //查询save表 ->有->插入save表
@@ -49,19 +53,47 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
             existingWord = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
         }
         if (existingWord == null) {
-            //无word
-            WordsDO wordsDO = new WordsDO();
-            wordsDO.setWord(word);
-            // 创建word
-            long wordid = easyEntityQuery.insertable(wordsDO).executeRows(true);
-            UserSavedWordsDO userSavedWordsDO = new UserSavedWordsDO();
-            userSavedWordsDO.setUserId(userId);
-            userSavedWordsDO.setWordId(wordid);
-            //插入mapping
-            easyEntityQuery.insertable(userSavedWordsDO).executeRows();
-            //插入缓存
-            redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
-            redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word,wordsDO);
+            RLock lock = redissonClient.getLock("wordLock:" + userId);
+            try{
+                boolean locked = lock.tryLock(0, -1, TimeUnit.SECONDS);
+                if(!locked){
+
+                }
+                existingWord  = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
+                if(existingWord == null){
+                    //无word
+                    WordsDO wordsDO = new WordsDO();
+                    wordsDO.setWord(word);
+                    // 创建word
+                    long wordid = easyEntityQuery.insertable(wordsDO).executeRows(true);
+                    UserSavedWordsDO userSavedWordsDO = new UserSavedWordsDO();
+                    userSavedWordsDO.setUserId(userId);
+                    userSavedWordsDO.setWordId(wordid);
+                    //插入mapping
+                    easyEntityQuery.insertable(userSavedWordsDO).executeRows();
+                    //插入缓存
+                    redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
+                    redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word,wordsDO);
+                }else {
+                    //有word
+                    Long wordid = existingWord.getId();
+                    //判断是否已经收藏
+                    UserSavedWordsDO userSavedWordsDO = easyEntityQuery.queryable(UserSavedWordsDO.class).where(o -> o.wordId().eq(wordid).and(o.userId().eq(userId))).firstOrNull();
+                    if (userSavedWordsDO == null) {
+                        //未收藏
+                        UserSavedWordsDO userSavedWordsDO1 = new UserSavedWordsDO();
+                        userSavedWordsDO1.setUserId(userId);
+                        userSavedWordsDO1.setWordId(wordid);
+                        //插入mapping
+                        easyEntityQuery.insertable(userSavedWordsDO1).executeRows();
+                    }
+                }
+            }catch (Exception e){
+                log.error("收藏单词失败:{}",e.getMessage());
+            }finally {
+                lock.unlock();
+            }
+
         }
         if(existingWord != null){
             //有word
