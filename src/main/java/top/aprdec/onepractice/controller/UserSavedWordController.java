@@ -15,10 +15,15 @@ import top.aprdec.onepractice.service.UserSavedWordService;
 public class UserSavedWordController {
     private final UserSavedWordService userSavedWordService;
 
-    @PostMapping("/collect")
+    @PostMapping("/add")
     public AResult collectWord(@RequestBody UserSaveWordReqDTO dto){
         userSavedWordService.addSavedWord(dto);
         return AResult.success();
+    }
+
+    @PostMapping("/hascollected")
+    public AResult hasCollected(@RequestBody UserSaveWordReqDTO dto){
+        return AResult.success(userSavedWordService.hascollected(dto));
     }
 
 }

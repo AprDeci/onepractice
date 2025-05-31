@@ -1,6 +1,7 @@
 package top.aprdec.onepractice.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.alibaba.fastjson2.JSON;
 import com.easy.query.api.proxy.client.EasyEntityQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +18,9 @@ import top.aprdec.onepractice.entity.WordsDO;
 import top.aprdec.onepractice.entity.proxy.UserSavedWordsDOProxy;
 import top.aprdec.onepractice.entity.proxy.WordsDOProxy;
 import top.aprdec.onepractice.exception.CommonException;
-import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.UserSavedWordService;
-import top.aprdec.onepractice.util.RedisUtil;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -49,6 +47,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
     }
 
 //    检查用户是否收藏
+    @Override
     public Boolean hascollected(UserSaveWordReqDTO dto){
         //        先判断有无 无-插入word-为收藏 有-拿到ID-查询有无
         String word = dto.getWord();
@@ -59,8 +58,11 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
             cacheUserSavedWords();
         }
         //查看word缓存是否存在
-        WordsDO wordsDO;
-        wordsDO = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
+        WordsDO wordsDO = null;
+        Object wordObject = redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
+        if(wordObject!= null){
+            wordsDO =JSON.parseObject(wordObject.toString(),WordsDO.class);
+        }
         if(wordsDO == null) {
 //       //查询word表是否有word 若无一定无
             wordsDO = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
@@ -140,9 +142,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
             if (existingWord == null) {
                 WordsDO newWord = new WordsDO();
                 newWord.setWord(word);
-                long wordId = easyEntityQuery.insertable(newWord).executeRows(true);
-                newWord.setId(wordId);
-
+                easyEntityQuery.insertable(newWord).executeRows(true);
                 // 缓存新单词
                 redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word, newWord);
                 return newWord;

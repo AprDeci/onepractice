@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class UserSaveWordReqDTO {
-    private Long userId;
     private String word;
 }

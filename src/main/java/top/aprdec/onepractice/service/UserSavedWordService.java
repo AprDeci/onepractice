@@ -9,4 +9,7 @@ public interface UserSavedWordService {
     //TODO: 缓存
     @Transactional
     void addSavedWord(UserSaveWordReqDTO dto);
+
+    //    检查用户是否收藏
+    Boolean hascollected(UserSaveWordReqDTO dto);
 }
