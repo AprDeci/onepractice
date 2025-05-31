@@ -35,89 +35,18 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
     @Transactional
     @Override
     public void addSavedWord(UserSaveWordReqDTO dto) {
-        String word = dto.getWord();
-        Long userId = StpUtil.getLoginIdAsLong();
-        //检查用户收藏集缓存是否存在?
-        Boolean cached = redisTemplate.hasKey(RedisKeyConstant.USER_SAVED_WORD_LIST + userId);
-        if(!cached){
-            cacheUserSavedWords();
-        }
-        //检查缓存中是否有该单词
-        WordsDO existingWord = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
-        if(existingWord == null){
-            //无word 查看数据库
-             existingWord  = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
-        }
-        if (existingWord == null) {
-            RLock lock = redissonClient.getLock("wordLock:" + userId);
-            try{
-                boolean locked = lock.tryLock(0, -1, TimeUnit.SECONDS);
-                if(!locked){
-                    throw new CommonException("获取锁失败");
-                }
-                //再次查询,避免重复插入
-                existingWord  = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
-                if(existingWord == null){
-                    //无word
-                    WordsDO wordsDO = new WordsDO();
-                    wordsDO.setWord(word);
-                    // 创建word
-                    long wordid = easyEntityQuery.insertable(wordsDO).executeRows(true);
-                    UserSavedWordsDO userSavedWordsDO = new UserSavedWordsDO();
-                    userSavedWordsDO.setUserId(userId);
-                    userSavedWordsDO.setWordId(wordid);
-                    //插入mapping
-                    easyEntityQuery.insertable(userSavedWordsDO).executeRows();
-                    //插入缓存
-                    redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
-                    redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word,wordsDO);
-                }else {
-                    //有word
-                    Long wordid = existingWord.getId();
-                    //判断是否已经收藏
-                    UserSavedWordsDO userSavedWordsDO = easyEntityQuery.queryable(UserSavedWordsDO.class).where(
-                            u->{
-                                u.wordId().eq(wordid);
-                                u.and(()-> {
-                                            u.userId().eq(userId);
-                                        }
-                                );
-                                }).firstOrNull();
-                    if (userSavedWordsDO == null) {
-                        //未收藏
-                        UserSavedWordsDO userSavedWordsDO1 = new UserSavedWordsDO();
-                        userSavedWordsDO1.setUserId(userId);
-                        userSavedWordsDO1.setWordId(wordid);
-                        //插入mapping
-                        easyEntityQuery.insertable(userSavedWordsDO1).executeRows();
-                        redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
-                    }
-                }
-            }catch (Exception e){
-                log.error("收藏单词失败:{}",e.getMessage());
-            }finally {
-                lock.unlock();
-            }
+        final String word = dto.getWord();
+        final Long userId = StpUtil.getLoginIdAsLong();
 
-        }
-        if(existingWord != null){
-            //有word
-            Long wordid = existingWord.getId();
-            //判断是否已经收藏
-            Boolean hasexit = redisTemplate.opsForSet().isMember(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
-            if(hasexit == null) {
-                UserSavedWordsDO userSavedWordsDO = new UserSavedWordsDO();
-                userSavedWordsDO.setUserId(userId);
-                userSavedWordsDO.setWordId(wordid);
-                easyEntityQuery.insertable(userSavedWordsDO).executeRows();
-                redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
-                redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word,existingWord);
-            }else{
-                throw new CommonException("该单词已经收藏过");
-            }
-        }
+        // 1. 确保用户收藏集缓存存在
+        ensureUserSavedCacheExists(userId);
+
+        // 2. 获取或创建单词
+        WordsDO targetWord = getOrCreateWord(word);
+
+        // 3. 添加收藏关系
+        addSavedWordMapping(userId, targetWord.getId());
     }
-
 
 //    检查用户是否收藏
     public Boolean hascollected(UserSaveWordReqDTO dto){
@@ -173,7 +102,98 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
         }
     }
 
+    // 确保用户收藏集缓存存在
+    private void ensureUserSavedCacheExists(Long userId) {
+        Boolean cached = redisTemplate.hasKey(RedisKeyConstant.USER_SAVED_WORD_LIST + userId);
+        if (!cached) {
+            cacheUserSavedWords();
+        }
+    }
 
+    // 获取或创建单词（原子操作）
+    private WordsDO getOrCreateWord(String word) {
+        // 优先查缓存
+        WordsDO existingWord = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
+        if (existingWord != null) {
+            return existingWord;
+        }
+
+        // 缓存未命中查数据库
+        existingWord = easyEntityQuery.queryable(WordsDO.class)
+                .where(o -> o.word().eq(word))
+                .firstOrNull();
+
+        if (existingWord != null) {
+            redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word, existingWord);
+            return existingWord;
+        }
+
+        // 需要创建新单词（加单词级锁）
+        RLock lock = redissonClient.getLock("wordLock:" + word); // 改为单词粒度锁
+        try {
+            lock.lock();
+            // 双重检查
+            existingWord = easyEntityQuery.queryable(WordsDO.class)
+                    .where(o -> o.word().eq(word))
+                    .firstOrNull();
+
+            if (existingWord == null) {
+                WordsDO newWord = new WordsDO();
+                newWord.setWord(word);
+                long wordId = easyEntityQuery.insertable(newWord).executeRows(true);
+                newWord.setId(wordId);
+
+                // 缓存新单词
+                redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word, newWord);
+                return newWord;
+            }
+            return existingWord;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // 添加收藏关系（原子操作）
+    private void addSavedWordMapping(Long userId, Long wordId) {
+        String userSavedKey = RedisKeyConstant.USER_SAVED_WORD_LIST + userId;
+
+        // 1. 先查缓存
+        if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(userSavedKey, wordId))) {
+            throw new CommonException("该单词已经收藏过");
+        }
+
+        // 2. 加用户级锁操作
+        RLock lock = redissonClient.getLock("userSavedLock:" + userId);
+        try {
+            lock.lock();
+            // 双重检查缓存
+            if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(userSavedKey, wordId))) {
+                throw new CommonException("该单词已经收藏过");
+            }
+
+            // 检查数据库（防止缓存失效）
+            boolean existsInDB = easyEntityQuery.queryable(UserSavedWordsDO.class)
+                    .where(u -> u.userId().eq(userId).and(u.wordId().eq(wordId)))
+                    .exists();
+
+            if (existsInDB) {
+                // 缓存补偿
+                redisTemplate.opsForSet().add(userSavedKey, wordId);
+                throw new CommonException("该单词已经收藏过");
+            }
+
+            // 创建收藏关系
+            UserSavedWordsDO mapping = new UserSavedWordsDO();
+            mapping.setUserId(userId);
+            mapping.setWordId(wordId);
+            easyEntityQuery.insertable(mapping).executeRows();
+
+            // 更新缓存
+            redisTemplate.opsForSet().add(userSavedKey, wordId);
+        } finally {
+            lock.unlock();
+        }
+    }
 
 
 }
