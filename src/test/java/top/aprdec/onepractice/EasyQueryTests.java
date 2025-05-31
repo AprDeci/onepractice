@@ -5,9 +5,13 @@ import com.easy.query.api.proxy.client.EasyEntityQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import top.aprdec.onepractice.commmon.constant.RedisKeyConstant;
 import top.aprdec.onepractice.eenum.PaperTypeEnum;
 import top.aprdec.onepractice.entity.QuestionsDO;
 import top.aprdec.onepractice.entity.UserDO;
+import top.aprdec.onepractice.entity.UserSavedWordsDO;
+import top.aprdec.onepractice.entity.proxy.UserSavedWordsDOProxy;
 
 import java.util.List;
 
@@ -15,7 +19,8 @@ import java.util.List;
 public class EasyQueryTests {
     @Autowired
     EasyEntityQuery easyEntityQuery;
-    private EasyEntityQuery entityQuery;
+    @Autowired
+    RedisTemplate redisTemplate;
 
     @Test
     void testselect() {
@@ -64,5 +69,17 @@ public class EasyQueryTests {
 
         System.out.println(parse);
 
+    }
+
+    @Test
+    void redisforset(){
+        List<UserSavedWordsDO> usersavewordList = easyEntityQuery.queryable(UserSavedWordsDO.class)
+                .select(u -> new UserSavedWordsDOProxy()
+                        .wordId().set(u.wordId())
+                        .userId().set(u.userId()))
+                .where(u -> u.userId().eq(14L))
+                .toList();
+        List<Long> wordIdList = usersavewordList.stream().map(UserSavedWordsDO::getWordId).toList();
+        redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+"14",wordIdList.toArray());
     }
 }
