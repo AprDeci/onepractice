@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.aprdec.onepractice.commmon.constant.RedisKeyConstant;
@@ -16,6 +17,7 @@ import top.aprdec.onepractice.entity.WordsDO;
 import top.aprdec.onepractice.entity.proxy.UserSavedWordsDOProxy;
 import top.aprdec.onepractice.entity.proxy.WordsDOProxy;
 import top.aprdec.onepractice.exception.CommonException;
+import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.UserSavedWordService;
 import top.aprdec.onepractice.util.RedisUtil;
 
@@ -28,11 +30,8 @@ import java.util.concurrent.TimeUnit;
 public class UserSavedWordServiceimpl implements UserSavedWordService {
     private final EasyEntityQuery easyEntityQuery;
     private final RedisTemplate redisTemplate;
-    private final RedisUtil redisUtil;
     private final RedissonClient redissonClient;
 
-    //查询words表 ->无->插入words->插入save表
-    //查询save表 ->有->插入save表
     @Transactional
     @Override
     public void addSavedWord(UserSaveWordReqDTO dto) {
@@ -44,21 +43,19 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
             cacheUserSavedWords();
         }
         //检查缓存中是否有该单词
-        Boolean haswordKey = redisTemplate.hasKey(RedisKeyConstant.WORD + word);
-        WordsDO existingWord;
-        if(!haswordKey){
+        WordsDO existingWord = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
+        if(existingWord == null){
             //无word 查看数据库
              existingWord  = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
-        }else{
-            existingWord = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
         }
         if (existingWord == null) {
             RLock lock = redissonClient.getLock("wordLock:" + userId);
             try{
                 boolean locked = lock.tryLock(0, -1, TimeUnit.SECONDS);
                 if(!locked){
-
+                    throw new CommonException("获取锁失败");
                 }
+                //再次查询,避免重复插入
                 existingWord  = easyEntityQuery.queryable(WordsDO.class).where(o -> o.word().eq(word)).firstOrNull();
                 if(existingWord == null){
                     //无word
@@ -78,7 +75,14 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
                     //有word
                     Long wordid = existingWord.getId();
                     //判断是否已经收藏
-                    UserSavedWordsDO userSavedWordsDO = easyEntityQuery.queryable(UserSavedWordsDO.class).where(o -> o.wordId().eq(wordid).and(o.userId().eq(userId))).firstOrNull();
+                    UserSavedWordsDO userSavedWordsDO = easyEntityQuery.queryable(UserSavedWordsDO.class).where(
+                            u->{
+                                u.wordId().eq(wordid);
+                                u.and(()-> {
+                                            u.userId().eq(userId);
+                                        }
+                                );
+                                }).firstOrNull();
                     if (userSavedWordsDO == null) {
                         //未收藏
                         UserSavedWordsDO userSavedWordsDO1 = new UserSavedWordsDO();
@@ -86,6 +90,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
                         userSavedWordsDO1.setWordId(wordid);
                         //插入mapping
                         easyEntityQuery.insertable(userSavedWordsDO1).executeRows();
+                        redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+userId,wordid);
                     }
                 }
             }catch (Exception e){
@@ -138,6 +143,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
     }
 
 //    用户登录缓存收藏表到Redis
+    @Async("asyncTaskExecutor")
     public void cacheUserSavedWords(){
         Long userId = StpUtil.getLoginIdAsLong();
         List<UserSavedWordsDO> usersavewordList = easyEntityQuery.queryable(UserSavedWordsDO.class)
@@ -153,6 +159,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
         }
     }
 //  单词表缓存
+    @Async("asyncTaskExecutor")
     public void cacheAllWords(){
         List<WordsDO> wordList = easyEntityQuery.queryable(WordsDO.class)
                 .select(w -> new WordsDOProxy()
@@ -165,6 +172,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
             });
         }
     }
+
 
 
 
