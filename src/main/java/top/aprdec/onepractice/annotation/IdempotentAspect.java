@@ -42,7 +42,6 @@ public class IdempotentAspect {
         sb.append(idempotent.keyPrefix()).append(StpUtil.getLoginIdAsString()).append(idempotent.delimiter()).append(method.getName());
         final String lockKey = sb.toString();
         log.info(lockKey);
-        System.out.println(idempotent.timeout());
         RLock lock = redissonClient.getLock(lockKey);
         boolean isLocked = false;
         try {
