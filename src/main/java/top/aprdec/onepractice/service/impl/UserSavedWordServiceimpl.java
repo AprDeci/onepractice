@@ -173,9 +173,12 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
 
             // 检查数据库（防止缓存失效）
             boolean existsInDB = easyEntityQuery.queryable(UserSavedWordsDO.class)
-                    .where(u -> u.userId().eq(userId).and(u.wordId().eq(wordId)))
-                    .exists();
-
+                    .where(u -> {
+                        u.userId().eq(userId);
+                        u.and(()->{
+                            u.wordId().eq(wordId);
+                        });
+                    }).firstOrNull() != null;
             if (existsInDB) {
                 // 缓存补偿
                 redisTemplate.opsForSet().add(userSavedKey, wordId);
