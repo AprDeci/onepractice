@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.aprdec.onepractice.commmon.AResult;
+import top.aprdec.onepractice.dto.req.CommonPageResultReqDTO;
 import top.aprdec.onepractice.dto.req.UserSaveWordReqDTO;
 import top.aprdec.onepractice.service.UserSavedWordService;
 
@@ -24,6 +25,11 @@ public class UserSavedWordController {
     @PostMapping("/hascollected")
     public AResult hasCollected(@RequestBody UserSaveWordReqDTO dto){
         return AResult.success(userSavedWordService.hascollected(dto));
+    }
+
+    @PostMapping("/getcollectedwords")
+    public AResult getCollectedWords(@RequestBody CommonPageResultReqDTO dto){
+        return AResult.success(userSavedWordService.getUserCollectedWords(dto));
     }
 
 }

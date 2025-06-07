@@ -3,6 +3,7 @@ package top.aprdec.onepractice.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson2.JSON;
 import com.easy.query.api.proxy.client.EasyEntityQuery;
+import com.easy.query.core.api.pagination.EasyPageResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -12,6 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.aprdec.onepractice.commmon.constant.RedisKeyConstant;
+import top.aprdec.onepractice.dto.req.CommonPageResultReqDTO;
 import top.aprdec.onepractice.dto.req.UserSaveWordReqDTO;
 import top.aprdec.onepractice.entity.UserSavedWordsDO;
 import top.aprdec.onepractice.entity.WordsDO;
@@ -59,7 +61,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
         }
         //查看word缓存是否存在
         WordsDO wordsDO = null;
-        Object wordObject = redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
+        Object wordObject = redisTemplate.opsForValue().get(RedisKeyConstant.WORDINFO + word);
         if(wordObject!= null){
             wordsDO =JSON.parseObject(wordObject.toString(),WordsDO.class);
         }
@@ -99,7 +101,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
                 .toList();
         if(!wordList.isEmpty()){
             wordList.forEach(word -> {
-                redisTemplate.opsForValue().set(RedisKeyConstant.WORD+word.getWord(),word);
+                redisTemplate.opsForValue().set(RedisKeyConstant.WORDINFO+word.getWord(),word);
             });
         }
     }
@@ -115,7 +117,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
     // 获取或创建单词（原子操作）
     private WordsDO getOrCreateWord(String word) {
         // 优先查缓存
-        WordsDO existingWord = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORD + word);
+        WordsDO existingWord = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORDINFO + word);
         if (existingWord != null) {
             return existingWord;
         }
@@ -126,7 +128,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
                 .firstOrNull();
 
         if (existingWord != null) {
-            redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word, existingWord);
+            redisTemplate.opsForValue().set(RedisKeyConstant.WORDINFO + word, existingWord);
             return existingWord;
         }
 
@@ -144,7 +146,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
                 newWord.setWord(word);
                 easyEntityQuery.insertable(newWord).executeRows(true);
                 // 缓存新单词
-                redisTemplate.opsForValue().set(RedisKeyConstant.WORD + word, newWord);
+                redisTemplate.opsForValue().set(RedisKeyConstant.WORDINFO + word, newWord);
                 return newWord;
             }
             return existingWord;
@@ -196,6 +198,58 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public List<WordsDO> getUserAllCollectedWords(){
+        // 1. 获取当前登录用户ID
+        Long userId = StpUtil.getLoginIdAsLong();
+        
+        // 2. 确保用户收藏集缓存存在
+        ensureUserSavedCacheExists(userId);
+        
+        // 3. 从Redis缓存获取用户收藏的单词ID列表
+        String userSavedKey = RedisKeyConstant.USER_SAVED_WORD_LIST + userId;
+        List<Long> wordIdList = redisTemplate.opsForSet().members(userSavedKey).stream()
+                .map(id -> Long.valueOf(id.toString()))
+                .toList();
+        
+        if (wordIdList.isEmpty()) {
+            return List.of(); // 返回空列表
+        }
+        
+        // 4. 根据单词ID列表查询单词详情
+        List<WordsDO> wordsList = easyEntityQuery.queryable(WordsDO.class)
+                .whereByIds(wordIdList)
+                .toList();
+
+        // 5. 返回单词列表
+        return wordsList;
+    }
+
+    @Override
+    public EasyPageResult<WordsDO> getUserCollectedWords(CommonPageResultReqDTO dto){
+        // 1. 获取当前登录用户ID
+        Long userId = StpUtil.getLoginIdAsLong();
+
+        // 2. 确保用户收藏集缓存存在
+        ensureUserSavedCacheExists(userId);
+
+        // 3. 从Redis缓存获取用户收藏的单词ID列表
+        String userSavedKey = RedisKeyConstant.USER_SAVED_WORD_LIST + userId;
+        List<Long> wordIdList = redisTemplate.opsForSet().members(userSavedKey).stream()
+                .map(id -> Long.valueOf(id.toString()))
+                .toList();
+
+
+        // 4. 根据单词ID列表查询单词详情
+        EasyPageResult<WordsDO> pageResult = easyEntityQuery.queryable(WordsDO.class)
+                .whereByIds(wordIdList)
+                .toPageResult(dto.getPage(), dto.getSize());
+
+
+        // 5. 返回单词列表
+        return pageResult;
     }
 
 
