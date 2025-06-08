@@ -15,6 +15,13 @@ public interface UserSavedWordService {
     @Transactional
     void addSavedWord(UserSaveWordReqDTO dto);
 
+    /**
+     * 删除用户收藏的单词
+     * @param dto 包含要删除的单词信息
+     */
+    @Transactional
+    void removeSavedWord(UserSaveWordReqDTO dto);
+
     //    检查用户是否收藏
     Boolean hascollected(UserSaveWordReqDTO dto);
 

@@ -34,6 +34,26 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
 
     @Transactional
     @Override
+    public void removeSavedWord(UserSaveWordReqDTO dto) {
+        final String word = dto.getWord();
+        final Long userId = StpUtil.getLoginIdAsLong();
+
+        // 1. 确保用户收藏集缓存存在
+        ensureUserSavedCacheExists(userId);
+
+        // 2. 查找单词
+        WordsDO targetWord = findWord(word);
+        if (targetWord == null) {
+            // 单词不存在，无需删除
+            return;
+        }
+
+        // 3. 删除收藏关系
+        removeSavedWordMapping(userId, targetWord.getId());
+    }
+
+    @Transactional
+    @Override
     public void addSavedWord(UserSaveWordReqDTO dto) {
         final String word = dto.getWord();
         final Long userId = StpUtil.getLoginIdAsLong();
@@ -150,6 +170,66 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
                 return newWord;
             }
             return existingWord;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
+    // 查找单词（不创建新单词）
+    private WordsDO findWord(String word) {
+        // 优先查缓存
+        WordsDO existingWord = (WordsDO) redisTemplate.opsForValue().get(RedisKeyConstant.WORDINFO + word);
+        if (existingWord != null) {
+            return existingWord;
+        }
+
+        // 缓存未命中查数据库
+        existingWord = easyEntityQuery.queryable(WordsDO.class)
+                .where(o -> o.word().eq(word))
+                .firstOrNull();
+
+        if (existingWord != null) {
+            // 更新缓存
+            redisTemplate.opsForValue().set(RedisKeyConstant.WORDINFO + word, existingWord);
+        }
+
+        return existingWord;
+    }
+
+    // 删除收藏关系（原子操作）
+    private void removeSavedWordMapping(Long userId, Long wordId) {
+        String userSavedKey = RedisKeyConstant.USER_SAVED_WORD_LIST + userId;
+
+        // 1. 先查缓存
+        if (Boolean.FALSE.equals(redisTemplate.opsForSet().isMember(userSavedKey, wordId))) {
+            // 缓存中不存在，可能已经删除
+            return;
+        }
+
+        // 2. 加用户级锁操作
+        RLock lock = redissonClient.getLock("userSavedLock:" + userId);
+        try {
+            lock.lock();
+            // 双重检查
+            if (Boolean.FALSE.equals(redisTemplate.opsForSet().isMember(userSavedKey, wordId))) {
+                return;
+            }
+
+            // 从数据库中删除
+            int deletedRows = easyEntityQuery.deletable(UserSavedWordsDO.class)
+                    .where(u -> {
+                        u.userId().eq(userId);
+                        u.and(() -> {
+                            u.wordId().eq(wordId);
+                        });
+                    })
+                    .executeRows();
+
+            if (deletedRows > 0) {
+                // 更新缓存
+                redisTemplate.opsForSet().remove(userSavedKey, wordId);
+            }
         } finally {
             lock.unlock();
         }
