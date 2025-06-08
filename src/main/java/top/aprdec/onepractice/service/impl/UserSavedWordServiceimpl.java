@@ -244,6 +244,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
 
         // 4. 根据单词ID列表查询单词详情
         EasyPageResult<WordsDO> pageResult = easyEntityQuery.queryable(WordsDO.class)
+                .select(w->w.FETCHER.word().id())
                 .whereByIds(wordIdList)
                 .toPageResult(dto.getPage(), dto.getSize());
 
