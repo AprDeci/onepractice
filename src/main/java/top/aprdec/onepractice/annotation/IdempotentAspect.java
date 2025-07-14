@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 @Configuration
 @Order(2)
 @Slf4j
-public class IdempotentAspect {
+class IdempotentAspect {
 
     private RedissonClient redissonClient;
 
@@ -39,7 +39,13 @@ public class IdempotentAspect {
             throw new CommonException("Idempotent注解的keyPrefix不能为空");
         }
         StringBuilder sb = new StringBuilder();
-        sb.append(idempotent.keyPrefix()).append(StpUtil.getLoginIdAsString()).append(idempotent.delimiter()).append(method.getName());
+        if(StpUtil.isLogin()){
+            sb.append(idempotent.keyPrefix()).append(StpUtil.getLoginIdAsString()).append(idempotent.delimiter()).append(method.getName());
+        }else{
+            sb.append(idempotent.keyPrefix()).append((int)(Math.random()*100000)).append(idempotent.delimiter()).append(method.getName());
+        }
+
+
         final String lockKey = sb.toString();
         log.info(lockKey);
         RLock lock = redissonClient.getLock(lockKey);

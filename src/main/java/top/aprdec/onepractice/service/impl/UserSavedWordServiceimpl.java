@@ -175,7 +175,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
         }
     }
 
-
+    // 添加收藏关系（原子操作）
     // 查找单词（不创建新单词）
     private WordsDO findWord(String word) {
         // 优先查缓存
@@ -217,7 +217,7 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
             }
 
             // 从数据库中删除
-            int deletedRows = easyEntityQuery.deletable(UserSavedWordsDO.class)
+            Long deletedRows = easyEntityQuery.deletable(UserSavedWordsDO.class)
                     .where(u -> {
                         u.userId().eq(userId);
                         u.and(() -> {
@@ -235,7 +235,6 @@ public class UserSavedWordServiceimpl implements UserSavedWordService {
         }
     }
 
-    // 添加收藏关系（原子操作）
     private void addSavedWordMapping(Long userId, Long wordId) {
         String userSavedKey = RedisKeyConstant.USER_SAVED_WORD_LIST + userId;
 
