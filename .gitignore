@@ -32,7 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 application.yml
-*.yml
+application*.yml
 src/main/java/top/aprdec/onepractice/commmon/constant/Cropto.java
 
 /logs
