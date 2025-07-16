@@ -27,20 +27,20 @@ steps:
       - name: maven-cache
         path: /root/.m2
 
-  - name: deploy
-    image: drillster/drone-rsync
-    environment:
-      HOST:
-        from_secret: DEPLOYIP
-      USERNAME:
-        from_secret: DEPLOYUSERNAME
-      PASSWORD:
-        from_secret: DEPLOYPASSWORD
+
+
+  - name: scp files
+    image: appleboy/drone-scp
     settings:
-      hosts: [ $HOST ]
-      source: ./target
+      host:
+        from_secret: DEPLOYIP
+      username:
+        from_secret: DEPLOYUSERNAME
+      password:
+        from_secret: DEPLOYPASSWORD
+      port: 22
       target: /home/onepractice/
-      include: [ "onepractice-0.0.1-SNAPSHOT.jar"]
+      source: ./target/onepractice-0.0.1-SNAPSHOT.jar
 
   - name: ssh
     image: appleboy/drone-ssh
@@ -50,9 +50,12 @@ steps:
       username:
         from_secret: DEPLOYUSERNAME
       password:
-        from_secret:
           from_secret: DEPLOYPASSWORD
       port: 22
       command_timeout: 2m
       script:
         - docker restart onepractice
+
+volumes:
+  - name: maven-cache
+    temp: {}
