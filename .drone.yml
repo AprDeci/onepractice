@@ -2,9 +2,18 @@ kind: pipeline
 type: docker
 name: default
 
+trigger:
+  branch:
+    - droneCi
+
+
+#构建过程 maven build 推送构件
 steps:
-  - name: greeting
-    image: alpine
+  - name: test
+    image: maven:3.9.10-eclipse-temurin-21-alpine
     commands:
-      - echo hello
-      - echo world
+      - mvn clean test -P prod
+  - name: package
+    image: maven:3.9.10-eclipse-temurin-21-alpine
+    commands:
+      - mvn clean package -P prod
