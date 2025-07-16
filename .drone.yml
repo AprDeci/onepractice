@@ -38,7 +38,7 @@ steps:
       PASSWORD:
         from_secret: DEPLOYPASSWORD
     settings:
-      hosts: [ ${HOST} ]
+      hosts: [ $HOST ]
       source: ./target
       target: /home/onepractice/
       include: [ "onepractice-0.0.1-SNAPSHOT.jar"]
