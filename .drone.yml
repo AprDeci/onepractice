@@ -19,7 +19,6 @@ steps:
       - name: maven-cache
         path: /root/.m2
 
-  - name: build
   - name: package
     image: docker.1ms.run/maven:3.9.10-eclipse-temurin-21-alpine
     commands:
