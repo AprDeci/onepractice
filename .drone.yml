@@ -27,20 +27,32 @@ steps:
       - name: maven-cache
         path: /root/.m2
 
-
-
-  - name: scp files
-    image: appleboy/drone-scp
+  - name: upload r2
+    image: plugins/s3
     settings:
-      host:
-        from_secret: DEPLOYIP
-      username:
-        from_secret: DEPLOYUSERNAME
-      password:
-        from_secret: DEPLOYPASSWORD
-      port: 22
-      target: /home/onepractice/
+      bucket: onepractice
+      endpoint:
+        from_secret: R2_ENDPOINT
+      access_key:
+        from_secret: R2_ACCESS_KEY
+      secret_key:
+        from_secret: R2_SECRET_KEY
       source: /drone/src/target/onepractice-0.0.1-SNAPSHOT.jar
+      target: /
+
+
+#  - name: scp files
+#    image: appleboy/drone-scp
+#    settings:
+#      host:
+#        from_secret: DEPLOYIP
+#      username:
+#        from_secret: DEPLOYUSERNAME
+#      password:
+#        from_secret: DEPLOYPASSWORD
+#      port: 22
+#      target: /home/onepractice/
+#      source: /drone/src/target/onepractice-0.0.1-SNAPSHOT.jar
 
   - name: ssh
     image: appleboy/drone-ssh
