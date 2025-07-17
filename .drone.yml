@@ -37,6 +37,7 @@ steps:
         from_secret: R2_ACCESS_KEY
       secret_key:
         from_secret: R2_SERCRET_KEY
+      region: APAC
       source: /drone/src/target/onepractice-0.0.1-SNAPSHOT.jar
       target: /
 
