@@ -39,7 +39,7 @@ steps:
         from_secret: R2_SERCRET_KEY
       region: APAC
       source: /drone/src/target/onepractice-0.0.1-SNAPSHOT.jar
-      target: /
+      target: /onepractice-0.0.1-SNAPSHOT.jar
 
 
   - name: scp files
@@ -52,7 +52,7 @@ steps:
       password:
         from_secret: DEPLOYPASSWORD
       port: 22
-      target: /home/onepractice/
+      target: /home/onepractice/onepractice-0.0.1-SNAPSHOT.jar
       source: /drone/src/target/onepractice-0.0.1-SNAPSHOT.jar
 
   - name: ssh
