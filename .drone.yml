@@ -39,21 +39,21 @@ steps:
         from_secret: R2_SERCRET_KEY
       region: APAC
       source: /drone/src/target/onepractice-0.0.1-SNAPSHOT.jar
-      target: /onepractice-0.0.1-SNAPSHOT.jar
+      target: onepractice-0.0.1-SNAPSHOT.jar
 
 
-  - name: scp files
-    image: appleboy/drone-scp
-    settings:
-      host:
-        from_secret: DEPLOYIP
-      username:
-        from_secret: DEPLOYUSERNAME
-      password:
-        from_secret: DEPLOYPASSWORD
-      port: 22
-      target: /home/onepractice/onepractice-0.0.1-SNAPSHOT.jar
-      source: /drone/src/target/onepractice-0.0.1-SNAPSHOT.jar
+#  - name: scp files
+#    image: appleboy/drone-scp
+#    settings:
+#      host:
+#        from_secret: DEPLOYIP
+#      username:
+#        from_secret: DEPLOYUSERNAME
+#      password:
+#        from_secret: DEPLOYPASSWORD
+#      port: 22
+#      target: /home/onepractice/onepractice-0.0.1-SNAPSHOT.jar
+#      source: /drone/src/target/onepractice-0.0.1-SNAPSHOT.jar
 
   - name: ssh
     image: appleboy/drone-ssh
