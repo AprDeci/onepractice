@@ -14,6 +14,8 @@ steps:
   - name: test
     image: docker.1ms.run/maven:3.9.10-eclipse-temurin-21-alpine
     commands:
+      - wget https://r2.126386.xyz/application.yml -O src/main/resources/application.yml
+      - wget https://r2.126386.xyz/application-prod.yml -O src/main/resources/application-prod.yml
       - mvn clean test -P prod
     volumes:
       - name: maven-cache
