@@ -39,8 +39,8 @@ steps:
         from_secret: R2_SERCRET_KEY
       region: APAC
       strip_prefix: /drone/src/target/
-      source: /drone/src/target/onepractice-0.0.1-SNAPSHOT.jar
-      target: onepractice-0.0.1-SNAPSHOT.jar
+      source: /drone/src/target/*.jar
+      target: /
 
 
 #  - name: scp files
