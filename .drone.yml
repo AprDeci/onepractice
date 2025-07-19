@@ -11,19 +11,19 @@ trigger:
 
 #构建过程 maven build 推送构件
 steps:
-  - name: test
+  - name: test and build
     image: docker.1ms.run/maven:3.9.10-eclipse-temurin-21-alpine
+    environment: # 从Secrets注入环境变量
+      APP_CONFIG_URL:
+        from_secret: APP_CONFIG_URL
+      PROD_CONFIG_URL:
+        from_secret: PROD_CONFIG_URL
     commands:
-      - wget https://r2.126386.xyz/application.yml -O src/main/resources/application.yml
-      - wget https://r2.126386.xyz/application-prod.yml -O src/main/resources/application-prod.yml
+      - wget ${APP_CONFIG_URL} -O src/main/resources/application.yml
+      - wget ${PROD_CONFIG_URL} -O src/main/resources/application-prod.yml
+      - echo "------------------------------start test----------------------------------"
       - mvn clean test -P prod
-    volumes:
-      - name: maven-cache
-        path: /root/.m2
-
-  - name: package
-    image: docker.1ms.run/maven:3.9.10-eclipse-temurin-21-alpine
-    commands:
+      - echo "------------------------------start package----------------------------------"
       - mvn package -P prod
     volumes:
       - name: maven-cache
