@@ -21,9 +21,9 @@ steps:
     commands:
       - wget $APP_CONFIG_URL -O src/main/resources/application.yml
       - wget $PROD_CONFIG_URL -O src/main/resources/application-prod.yml
-      - echo "------------------------------start test----------------------------------"
+      - echo "✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨start test✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨"
       - mvn clean test -P prod
-      - echo "------------------------------start package----------------------------------"
+      - echo "✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨start package✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨"
       - mvn package -P prod
     volumes:
       - name: maven-cache
