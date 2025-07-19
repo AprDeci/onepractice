@@ -19,8 +19,8 @@ steps:
       PROD_CONFIG_URL:
         from_secret: PROD_CONFIG_URL
     commands:
-      - wget ${APP_CONFIG_URL} -O src/main/resources/application.yml
-      - wget ${PROD_CONFIG_URL} -O src/main/resources/application-prod.yml
+      - wget $APP_CONFIG_URL -O src/main/resources/application.yml
+      - wget $PROD_CONFIG_URL -O src/main/resources/application-prod.yml
       - echo "------------------------------start test----------------------------------"
       - mvn clean test -P prod
       - echo "------------------------------start package----------------------------------"
