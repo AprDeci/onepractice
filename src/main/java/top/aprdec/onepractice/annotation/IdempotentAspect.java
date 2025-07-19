@@ -47,7 +47,7 @@ class IdempotentAspect {
 
 
         final String lockKey = sb.toString();
-        log.info(lockKey);
+        log.info("幂等-{}", lockKey);
         RLock lock = redissonClient.getLock(lockKey);
         boolean isLocked = false;
         try {
