@@ -11,6 +11,7 @@ import top.aprdec.onepractice.eenum.PaperTypeEnum;
 import top.aprdec.onepractice.entity.QuestionsDO;
 import top.aprdec.onepractice.entity.UserDO;
 import top.aprdec.onepractice.entity.UserSavedWordsDO;
+import top.aprdec.onepractice.entity.WordsDO;
 import top.aprdec.onepractice.entity.proxy.UserSavedWordsDOProxy;
 
 import java.util.List;
@@ -82,4 +83,14 @@ public class EasyQueryTests {
         List<Long> wordIdList = usersavewordList.stream().map(UserSavedWordsDO::getWordId).toList();
         redisTemplate.opsForSet().add(RedisKeyConstant.USER_SAVED_WORD_LIST+"14",wordIdList.toArray());
     }
+
+    @Test
+    void testinsert(){
+        WordsDO newWord = new WordsDO();
+        newWord.setWord("word");
+        System.out.println(newWord);
+        long wordId = easyEntityQuery.insertable(newWord).executeRows(true);
+        System.out.println(newWord);
+    }
+
 }
