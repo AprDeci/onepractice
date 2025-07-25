@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import top.aprdec.onepractice.Iinterface.ReuqireRecaptcha;
 import top.aprdec.onepractice.dto.req.HasCaptchaToken;
+import top.aprdec.onepractice.eenum.ErrorEnum;
 import top.aprdec.onepractice.exception.CommonException;
+import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.util.RecaptchaUtil;
 
 @Aspect
@@ -33,7 +35,7 @@ public class ReCaptchaAspect {
                 //TODO 低得分用户校验邮箱验证码
             }
         }else{
-            throw new CommonException("参数错误");
+            throw new GeneralBusinessException(ErrorEnum.RECAPTCHA_SCORE_LOW);
         }
 
     }

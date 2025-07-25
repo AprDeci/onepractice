@@ -13,6 +13,7 @@ public enum ErrorEnum {
     REPEAT_OPERATION(10007,"重复操作"),
     EMAIL_SEND_WAIT(10008,"邮箱已经发送 稍后再试"),
     PASSWORD_OR_USER_ERROR(10009,"密码错误或用户不存在"),
+    RECAPTCHA_SCORE_LOW(10010,"验证分数过低"),
 
 
 //    20000-30000 系统错误
@@ -28,6 +29,8 @@ public enum ErrorEnum {
 
 
     //40000-50000 权限错误
+    PERMISSION_NO_ACCESS(40001,"没有访问权限"),
+
 
 
     //50000-60000 参数错误
