@@ -35,7 +35,7 @@ public class CaptchaServiceimpl implements CaptchaService {
         }
         String key = RedisKeyConstant.CAPTCHA_EMAIL + email;
         String captcha = String.format("%06d", ThreadLocalRandom.current().nextInt(1000000));
-        log.info("captcha:{}", captcha);
+        log.info("email:{},captcha:{}", email,captcha);
 
         // 检查缓存
         if(!redisutil.haskey(key)){
@@ -84,7 +84,6 @@ public class CaptchaServiceimpl implements CaptchaService {
 
     @Override
     public Boolean checkEmailCaptchawhenResetPassword(String email, String captcha) {
-        System.out.println("eeeee"+email);
 //        检查是否存在邮箱
         long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(email)).count();
         if(count==0){
