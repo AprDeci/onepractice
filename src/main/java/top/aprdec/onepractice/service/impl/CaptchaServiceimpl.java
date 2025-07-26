@@ -51,7 +51,7 @@ public class CaptchaServiceimpl implements CaptchaService {
                 }
             }).thenApply(result -> {
                 if(result) {
-                    redisutil.set(key, captcha,   5*60); // 只有发送成功才存入Redis
+                    redisutil.set(key, captcha,   60); // 只有发送成功才存入Redis
                 }
                 return result;
             });
