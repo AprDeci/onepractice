@@ -12,4 +12,6 @@ public @interface ReuqireRecaptcha {
     double minScore() default 0.5;
 
     String errorMessage() default "reCAPTCHA验证失败";
+
+    boolean sendEmailOnFailure() default true;
 }
