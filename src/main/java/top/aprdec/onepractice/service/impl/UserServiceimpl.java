@@ -111,7 +111,7 @@ public class UserServiceimpl implements UserService {
         if(userDO != null){
             StpUtil.login(userDO.getId());
             String tokenValue = StpUtil.getTokenInfo().tokenValue;
-            UserLoginRespDTO result = new UserLoginRespDTO(userDO.getId(), userDO.getUsername(), userDO.getPassword(),tokenValue);
+            UserLoginRespDTO result = new UserLoginRespDTO(userDO.getId(), userDO.getUsername(),tokenValue);
             return result;
         }
         throw new GeneralBusinessException(ErrorEnum.PASSWORD_OR_USER_ERROR);

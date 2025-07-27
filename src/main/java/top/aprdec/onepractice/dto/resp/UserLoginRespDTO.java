@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 public class UserLoginRespDTO {
     private Long id;
     private String username;
-    private String password;
     private String token;
 }
