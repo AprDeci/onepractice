@@ -10,5 +10,10 @@ import lombok.NoArgsConstructor;
 public class UserLoginRespDTO {
     private Long id;
     private String username;
+    private String email;
     private String token;
+
+    public UserLoginRespDTO(String email){
+        this.email = email;
+    }
 }
