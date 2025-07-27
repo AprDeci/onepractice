@@ -25,10 +25,11 @@ public class CaptchaController {
         else return AResult.error(ErrorEnum.CAPTCHA_SEND_ERROR);
     }
 
-    @PostMapping("/email/resetverify")
-    public AResult checkEmailCaptchaWhenReset(@RequestBody EmailCaptchaReqDTO dto){
+    @PostMapping("/email/verify")
+    public AResult verifyEmailCaptcha(@RequestBody EmailCaptchaReqDTO dto){
         Boolean b = captchaService.checkEmailCaptchawhenResetPassword(dto.getEmail(),dto.getCode());
         if(b) return AResult.success();
         else return AResult.error(ErrorEnum.CAPTCHA_ERROR);
     }
+
 }
