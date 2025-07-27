@@ -35,33 +35,25 @@ public class CaptchaServiceimpl implements CaptchaService {
         }
         String key = RedisKeyConstant.CAPTCHA_EMAIL + email;
         String captcha = String.format("%06d", ThreadLocalRandom.current().nextInt(1000000));
-        log.info("email:{},captcha:{}", email,captcha);
+        log.info("email:{},captcha:{}", email, captcha);
 
         // 检查缓存
-        if(!redisutil.haskey(key)){
-            CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
+        if(!redisutil.haskey(key)) {
+            // 异步发送邮件，不等待结果
+            CompletableFuture.runAsync(() -> {
                 try {
                     emailutil.sendEmail(email,
                             EmailTemplateEnum.VERIFICATION_CODE_EMAIL_HTML.set(captcha),
                             VERIFICATION_CODE_EMAIL_SUBTITLE.getTemplate());
-                    return true; // 发送成功
+                    // 发送成功,存入Redis
+                    redisutil.set(key, captcha, 60);
+                    log.info("验证码发送成功并已存入Redis");
                 } catch (Exception e) {
                     log.error("验证码发送失败: {}", e.getMessage());
-                    return false; // 发送失败
                 }
-            }).thenApply(result -> {
-                if(result) {
-                    redisutil.set(key, captcha,   60); // 只有发送成功才存入Redis
-                }
-                return result;
             });
-
-            try {
-                return future.get(); // 等待异步操作完成并返回结果
-            } catch (InterruptedException | ExecutionException e) {
-                log.error("异步操作异常: {}", e.getMessage());
-                return false;
-            }
+            //不再等待发送结果
+            return true;
         } else {
             throw new GeneralBusinessException(ErrorEnum.EMAIL_SEND_WAIT);
         }
