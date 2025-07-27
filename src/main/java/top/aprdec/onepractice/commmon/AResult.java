@@ -28,5 +28,10 @@ public final class AResult<T> {
         return new AResult<>(errorEnum.getCode(),errorEnum.getMsg(),null);
     }
 
+    public static <T> AResult<T> error(ErrorEnum errorEnum, T data){
+        return new AResult<>(errorEnum.getCode(),errorEnum.getMsg(),data);
+    }
+
+
 
 }

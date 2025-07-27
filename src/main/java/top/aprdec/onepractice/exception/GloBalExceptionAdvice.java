@@ -24,7 +24,11 @@ public class GloBalExceptionAdvice {
 
     @ExceptionHandler(value=GeneralBusinessException.class)
     public AResult<Object> handleException(GeneralBusinessException e) {
-        return AResult.error(e.getErrorEnum());
+        if(e.getData() != null) {
+            return AResult.error(e.getErrorEnum(), e.getData());
+        }else {
+            return AResult.error(e.getErrorEnum());
+        }
     }
 
     @ExceptionHandler(value=CommonException.class)
@@ -34,8 +38,8 @@ public class GloBalExceptionAdvice {
 
 
     @ExceptionHandler(value = NotLoginException.class)
-public AResult<Object> handleException(NotLoginException e) {
-    return AResult.error(ErrorEnum.TOKEN_INVALID);
+    public AResult<Object> handleException(NotLoginException e) {
+        return AResult.error(ErrorEnum.TOKEN_INVALID);
     }
 
     @ExceptionHandler(value= MethodArgumentNotValidException.class)
