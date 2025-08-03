@@ -83,7 +83,6 @@ public class UserServiceimpl implements UserService {
         }
 
     @Override
-    @ReuqireRecaptcha
     public UserLoginRespDTO login(UserLoginReqDTO requestparam) {
         String usernameorEmail = requestparam.getUsernameorEmail();
         boolean emailflag = false;
