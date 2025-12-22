@@ -20,7 +20,7 @@
         <java.version>17</java.version>
         <easy-query.version>3.0.57</easy-query.version>
         <hikari.version>3.3.1</hikari.version>
-        <mysql.version>9.2.0</mysql.version>
+        <mysql.version>9.3.0</mysql.version>
         <lombok.version>1.18.36</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <skipTests>true</skipTests>
@@ -154,7 +154,7 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>5.8.24</version>
+            <version>5.8.40</version>
         </dependency>
 
         <dependency>
