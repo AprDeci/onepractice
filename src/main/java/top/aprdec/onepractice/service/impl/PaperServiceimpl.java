@@ -72,7 +72,7 @@ public class PaperServiceimpl implements PaperService {
                     p.type().eq(!EasyStringUtil.isEmpty(querys.getType()), querys.getType());
                     p.examYear().eq(querys.getYear() != null && querys.getYear() != 0, querys.getYear());
                     p.questionCount().gt(0L);
-                }).toPageResult(querys.getPage(), querys.getSize());
+                }).orderBy(p -> {p.examYear().desc();p.examMonth().desc();p.type().subString(4,1).desc();}).toPageResult(querys.getPage(), querys.getSize());
         return pageResult;
     }
 
