@@ -1,6 +1,5 @@
 package top.aprdec.onepractice.util;
 
-import cn.hutool.core.date.DateTime;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,7 +57,7 @@ public class RecaptchaUtil {
         private boolean success;
         private double score;
         private String action;
-        private DateTime challengeTs;
+        private String  challengeTs;
         private String hostname;
         private String[] errorCodes;
     }
