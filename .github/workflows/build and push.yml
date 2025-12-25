@@ -47,6 +47,9 @@ jobs:
           cat <<'EOF' > src/main/resources/application-prod.yml
           ${{ secrets.APPLICATION_PROD_YML }}
           EOF
+          cat <<'EOF2' >> src/main/resources/application-prod.yml
+          ${{ secrets.APPLICATION_YML }}
+          EOF2
 
       - name: Build and push image
         uses: docker/build-push-action@v5
