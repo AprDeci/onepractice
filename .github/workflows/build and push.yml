@@ -1,0 +1,60 @@
+name: Build and Push Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: "要部署的分支（預設 prod）"
+        required: false
+        default: prod
+  push:
+    branches:
+      - prod
+
+env:
+  REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+  IMAGE_NAME: ${{ github.event.repository.name }}
+  DEPLOY_BRANCH: ${{ inputs.target_branch != '' && inputs.target_branch || 'prod' }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_BRANCH }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ env.DEPLOY_BRANCH }}
+            type=sha
+            type=raw,value=latest,enable=${{ env.DEPLOY_BRANCH == 'prod' }}
+
+      - name: Create application-prod.yml
+        run: |
+          mkdir -p src/main/resources
+          cat <<'EOF' > src/main/resources/application-prod.yml
+          ${{ secrets.APPLICATION_PROD_YML }}
+          EOF
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
