@@ -73,6 +73,8 @@ public class QuestionServiceimpl implements QuestionService {
                         LinkedHashMap::new,
                         Collectors.toList()
                 ));
+        // 对听力部分排序 按照questionOrder
+        questionsByPart.get("Part II").sort(Comparator.comparingInt(QuestionsDO::getQuestionOrder));
 
         // 转换为 QuestionPart 数组（顺序与数据库一致）
         QuestionPart[] questionParts = questionsByPart.entrySet().stream()
@@ -97,6 +99,8 @@ public class QuestionServiceimpl implements QuestionService {
                 .toList()
                 .stream().filter(Objects::nonNull)
                 .flatMap(List::stream)
+                //排序 按照index
+                .sorted(Comparator.comparingInt(answer::getIndex))
                 .collect(Collectors.toList());
         AnswersRespDTO answersRespDTO = new AnswersRespDTO();
         answersRespDTO.setAnswers(collect);
