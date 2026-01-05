@@ -74,7 +74,9 @@ public class QuestionServiceimpl implements QuestionService {
                         Collectors.toList()
                 ));
         // 对听力部分排序 按照questionOrder
-        questionsByPart.get("Part II").sort(Comparator.comparingInt(QuestionsDO::getQuestionOrder));
+        if(questionsByPart.containsKey("Part II")) {
+            questionsByPart.get("Part II").sort(Comparator.comparingInt(QuestionsDO::getQuestionOrder));
+        }
 
         // 转换为 QuestionPart 数组（顺序与数据库一致）
         QuestionPart[] questionParts = questionsByPart.entrySet().stream()
