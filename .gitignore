@@ -33,6 +33,7 @@ build/
 .vscode/
 application.yml
 *.yml
+!.github/workflows/*.yml
 src/main/java/top/aprdec/onepractice/commmon/constant/Cropto.java
 
 /logs
