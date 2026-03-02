@@ -14,9 +14,6 @@ public interface PaperService {
 
     List<PaperDO> getAllPapers();
 
-    PaperdataRespDTO getPapersByPageAndSize(Integer page, Integer size);
-
-
     EasyPageResult<PaperDO> getPaperswithQuerysByPageAndSize(PaperqueryDTO querys);
 
     EasyPageResult<PaperWithRatingRespDTO> getPapersAndRatingWithQuerysByPageAndSize(PaperqueryDTO querys);

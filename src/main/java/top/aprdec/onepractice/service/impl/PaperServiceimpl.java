@@ -36,15 +36,6 @@ public class PaperServiceimpl implements PaperService {
     }
 
     @Override
-    public PaperdataRespDTO getPapersByPageAndSize(Integer page, Integer size) {
-        EasyPageResult<PaperDO> pageResult = easyEntityQuery.queryable(PaperDO.class).toPageResult(page, size);
-        PaperdataRespDTO paperdataRespDTO = new PaperdataRespDTO();
-        paperdataRespDTO.setPapers(pageResult.getData());
-        paperdataRespDTO.setTotal(pageResult.getTotal());
-        return paperdataRespDTO;
-    }
-
-    @Override
     public EasyPageResult<PaperDO> getPaperswithQuerysByPageAndSize(PaperqueryDTO querys) {
         EasyPageResult<PaperDO> result = easyEntityQuery.queryable(PaperDO.class)
                 .where(p -> {

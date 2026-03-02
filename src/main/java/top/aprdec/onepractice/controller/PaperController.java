@@ -29,12 +29,6 @@ public class PaperController {
         return AResult.success(allPapers);
     }
 
-    @PostMapping("/page")
-    public AResult getPapersByPageandSize(@RequestBody Integer page,@RequestBody Integer size) {
-        PaperdataRespDTO result = paperService.getPapersByPageAndSize(page, size);
-        return AResult.success(result);
-    }
-
     @PostMapping("/getPaperwithQuerys")
     public AResult getPaperWithquerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
         EasyPageResult<PaperDO> result = paperService.getPaperswithQuerysByPageAndSize(querys);
