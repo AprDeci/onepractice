@@ -1,8 +1,10 @@
 package top.aprdec.onepractice.controller;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.aprdec.onepractice.Iinterface.Idempotent;
 import top.aprdec.onepractice.commmon.AResult;
@@ -14,6 +16,7 @@ import top.aprdec.onepractice.service.CaptchaService;
 @RestController
 @RequestMapping("/api/captcha")
 @RequiredArgsConstructor
+@Validated
 public class CaptchaController {
     private final CaptchaService captchaService;
 
@@ -26,7 +29,7 @@ public class CaptchaController {
     }
 
     @PostMapping("/email/verify")
-    public AResult verifyEmailCaptcha(@RequestBody EmailCaptchaReqDTO dto){
+    public AResult verifyEmailCaptcha(@RequestBody @Valid EmailCaptchaReqDTO dto) {
         Boolean b = captchaService.checkEmailCaptchawhenResetPassword(dto.getEmail(),dto.getCode());
         if(b) return AResult.success();
         else return AResult.error(ErrorEnum.CAPTCHA_ERROR);

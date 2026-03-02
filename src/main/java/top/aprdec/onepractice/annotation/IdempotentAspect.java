@@ -1,6 +1,7 @@
 package top.aprdec.onepractice.annotation;
 
 import cn.dev33.satoken.stp.StpUtil;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -12,6 +13,8 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import top.aprdec.onepractice.Iinterface.Idempotent;
 import top.aprdec.onepractice.exception.CommonException;
 
@@ -31,7 +34,7 @@ class IdempotentAspect {
     }
 
     @Around("execution(public * *(..)) && @annotation(top.aprdec.onepractice.Iinterface.Idempotent)")
-    public Object interceptor(ProceedingJoinPoint joinPoint) {
+    public Object interceptor(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Idempotent idempotent = method.getAnnotation(Idempotent.class);
@@ -62,7 +65,8 @@ class IdempotentAspect {
             }
             return joinPoint.proceed();
         } catch (Throwable e) {
-            throw new CommonException("系统异常:"+e.getMessage());
+            log.error("idempotent aspect error", e);
+            throw e;
         } finally {
             if (isLocked && lock.isHeldByCurrentThread()) {
                 lock.unlock();
