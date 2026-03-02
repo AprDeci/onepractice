@@ -24,27 +24,27 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @GetMapping("/getById")
-    public AResult<List<QuestionsDO>> getQuestionsByPaperId(@RequestParam Integer Id) {
-        log.info(Id.toString());
-        List<QuestionsDO> questions = questionService.getQuestionByPaperId(Id);
+    public AResult<List<QuestionsDO>> getQuestionsByPaperId(@RequestParam Integer id) {
+        log.info(id.toString());
+        List<QuestionsDO> questions = questionService.getQuestionByPaperId(id);
         return AResult.success(questions);
     }
 
     @GetMapping("/getByType")
-    public AResult<List<QuestionsDO>> getQuestionsByPaperIdAndType(@RequestParam Integer Id, @RequestParam String type) {
-        List<QuestionsDO> questions = questionService.getQuestionByPaperIdAndType(Id,type);
+    public AResult<List<QuestionsDO>> getQuestionsByPaperIdAndType(@RequestParam Integer id, @RequestParam String type) {
+        List<QuestionsDO> questions = questionService.getQuestionByPaperIdAndType(id, type);
         return AResult.success(questions);
     }
 
     @GetMapping("/getAllByIdSplitByPart")
-    public AResult<ExamQuestionRespDTO> getQuestionsByPaperIdSplitByPart(@RequestParam Integer Id) {
-        ExamQuestionRespDTO questionsByPaperIdSplitByPart = questionService.getQuestionsByPaperIdSplitByPart(Id);
+    public AResult<ExamQuestionRespDTO> getQuestionsByPaperIdSplitByPart(@RequestParam Integer id) {
+        ExamQuestionRespDTO questionsByPaperIdSplitByPart = questionService.getQuestionsByPaperIdSplitByPart(id);
         return AResult.success(questionsByPaperIdSplitByPart);
     }
 
     @GetMapping("/getAnswersByPaperId")
-    public AResult<AnswersRespDTO> getAnswersByPaperId(@RequestParam Integer Id) {
-        AnswersRespDTO dto = questionService.getAnswersByPaperId(Id);
+    public AResult<AnswersRespDTO> getAnswersByPaperId(@RequestParam Integer id) {
+        AnswersRespDTO dto = questionService.getAnswersByPaperId(id);
         return AResult.success(dto);
     }
 
