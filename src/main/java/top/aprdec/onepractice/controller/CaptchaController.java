@@ -22,14 +22,14 @@ public class CaptchaController {
 
     @Idempotent(timeout = 50,message = "验证码已发送，请稍后重试")
     @GetMapping("/email")
-    public AResult getEmailCaptcha(@RequestParam @Email(message = "邮箱格式不正确") String email){
+    public AResult<Void> getEmailCaptcha(@RequestParam @Email(message = "邮箱格式不正确") String email) {
         Boolean result = captchaService.getEmailCaptcha(email);
         if(result) return AResult.success();
         else return AResult.error(ErrorEnum.CAPTCHA_SEND_ERROR);
     }
 
     @PostMapping("/email/verify")
-    public AResult verifyEmailCaptcha(@RequestBody @Valid EmailCaptchaReqDTO dto) {
+    public AResult<Void> verifyEmailCaptcha(@RequestBody @Valid EmailCaptchaReqDTO dto) {
         Boolean b = captchaService.checkEmailCaptchawhenResetPassword(dto.getEmail(),dto.getCode());
         if(b) return AResult.success();
         else return AResult.error(ErrorEnum.CAPTCHA_ERROR);

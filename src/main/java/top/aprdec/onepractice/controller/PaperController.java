@@ -22,37 +22,37 @@ public class PaperController {
     private final PaperService paperService;
 
     @GetMapping("/all")
-    public AResult getallpaper() {
-        List allPapers = paperService.getAllPapers();
+    public AResult<List<PaperDO>> getallpaper() {
+        List<PaperDO> allPapers = paperService.getAllPapers();
         return AResult.success(allPapers);
     }
 
     @PostMapping("/getPaperwithQuerys")
-    public AResult getPaperWithquerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
+    public AResult<EasyPageResult<PaperDO>> getPaperWithquerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
         EasyPageResult<PaperDO> result = paperService.getPaperswithQuerysByPageAndSize(querys);
         return AResult.success(result);
     }
 
     @PostMapping("/getPaperandRatingWithQuerys")
-    public AResult getPaperandRatingWithQuerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
+    public AResult<EasyPageResult<PaperWithRatingRespDTO>> getPaperandRatingWithQuerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
         EasyPageResult<PaperWithRatingRespDTO> result = paperService.getPapersAndRatingWithQuerysByPageAndSize(querys);
         return AResult.success(result);
     }
 
     @GetMapping("/type")
-    public AResult getPaperByType(@RequestParam String type) {
+    public AResult<List<PaperDO>> getPaperByType(@RequestParam String type) {
         List<PaperDO> papers = paperService.getPapersBytype(type);
         return AResult.success(papers);
     }
 
     @GetMapping("/types")
-    public AResult getAllPaperTypes(){
+    public AResult<List<String>> getAllPaperTypes() {
         List<String> allTypes = paperService.getAllTypes();
         return AResult.success(allTypes);
     }
 
     @GetMapping("/intro")
-    public AResult getPaperIntro(@RequestParam Integer id){
+    public AResult<PaperIntroRespDTO> getPaperIntro(@RequestParam Integer id) {
         PaperIntroRespDTO paperIntroRespDTO = paperService.getPaperIntro(id);
         return AResult.success(paperIntroRespDTO);
     }

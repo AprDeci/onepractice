@@ -22,21 +22,21 @@ public class RecordController {
 
     @PostMapping("/save")
     @Idempotent(timeout = 2)
-    public AResult saveRecord(@RequestBody RecordReqDTO dto){
+    public AResult<String> saveRecord(@RequestBody RecordReqDTO dto) {
         log.info(dto.toString());
         String recordId = recordService.addRecord(dto);
         return AResult.success(recordId);
     }
 
     @GetMapping("/list")
-    public AResult getRecordList(@RequestParam int days){
+    public AResult<List<UserExamRecordDO>> getRecordList(@RequestParam int days) {
         List<UserExamRecordDO> recentRecords = recordService.getRecentRecords(days,1,10);
         return AResult.success(recentRecords);
     }
 
     @PostMapping("update")
     @Idempotent(timeout = 2)
-    public AResult updateRecord(@RequestBody RecordReqDTO dto){
+    public AResult<Void> updateRecord(@RequestBody RecordReqDTO dto) {
         recordService.updateRecord(dto);
         return AResult.success();
     }

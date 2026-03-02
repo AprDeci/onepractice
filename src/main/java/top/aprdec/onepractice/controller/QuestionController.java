@@ -24,26 +24,26 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @GetMapping("/getById")
-    public AResult getQuestionsByPaperId(@RequestParam Integer Id){
+    public AResult<List<QuestionsDO>> getQuestionsByPaperId(@RequestParam Integer Id) {
         log.info(Id.toString());
         List<QuestionsDO> questions = questionService.getQuestionByPaperId(Id);
         return AResult.success(questions);
     }
 
     @GetMapping("/getByType")
-    public AResult getQuestionsByPaperIdAndType(@RequestParam Integer Id,@RequestParam String type){
+    public AResult<List<QuestionsDO>> getQuestionsByPaperIdAndType(@RequestParam Integer Id, @RequestParam String type) {
         List<QuestionsDO> questions = questionService.getQuestionByPaperIdAndType(Id,type);
         return AResult.success(questions);
     }
 
     @GetMapping("/getAllByIdSplitByPart")
-    public AResult getQuestionsByPaperIdSplitByPart(@RequestParam Integer Id){
+    public AResult<ExamQuestionRespDTO> getQuestionsByPaperIdSplitByPart(@RequestParam Integer Id) {
         ExamQuestionRespDTO questionsByPaperIdSplitByPart = questionService.getQuestionsByPaperIdSplitByPart(Id);
         return AResult.success(questionsByPaperIdSplitByPart);
     }
 
     @GetMapping("/getAnswersByPaperId")
-    public AResult getAnswersByPaperId(@RequestParam Integer Id){
+    public AResult<AnswersRespDTO> getAnswersByPaperId(@RequestParam Integer Id) {
         AnswersRespDTO dto = questionService.getAnswersByPaperId(Id);
         return AResult.success(dto);
     }
