@@ -1,8 +1,10 @@
 package top.aprdec.onepractice.controller;
 
 import com.easy.query.core.api.pagination.EasyPageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.aprdec.onepractice.commmon.AResult;
 import top.aprdec.onepractice.dto.req.PaperqueryDTO;
@@ -17,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/paper")
 @RequiredArgsConstructor
+@Validated
 public class PaperController {
 
     private final PaperService paperService;
@@ -28,13 +31,13 @@ public class PaperController {
     }
 
     @PostMapping("/getPaperwithQuerys")
-    public AResult<EasyPageResult<PaperDO>> getPaperWithquerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
+    public AResult<EasyPageResult<PaperDO>> getPaperWithquerysByPageAndSize(@RequestBody @Valid PaperqueryDTO querys) {
         EasyPageResult<PaperDO> result = paperService.getPaperswithQuerysByPageAndSize(querys);
         return AResult.success(result);
     }
 
     @PostMapping("/getPaperandRatingWithQuerys")
-    public AResult<EasyPageResult<PaperWithRatingRespDTO>> getPaperandRatingWithQuerysByPageAndSize(@RequestBody PaperqueryDTO querys) {
+    public AResult<EasyPageResult<PaperWithRatingRespDTO>> getPaperandRatingWithQuerysByPageAndSize(@RequestBody @Valid PaperqueryDTO querys) {
         EasyPageResult<PaperWithRatingRespDTO> result = paperService.getPapersAndRatingWithQuerysByPageAndSize(querys);
         return AResult.success(result);
     }

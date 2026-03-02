@@ -1,8 +1,9 @@
 package top.aprdec.onepractice.controller;
 
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.client.protocol.Time;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.aprdec.onepractice.Iinterface.Idempotent;
 import top.aprdec.onepractice.commmon.AResult;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequestMapping("/api/record")
 @Slf4j
 @RequiredArgsConstructor
+@Validated
 public class RecordController {
 
     private final RecordService recordService;
@@ -29,7 +31,7 @@ public class RecordController {
     }
 
     @GetMapping("/list")
-    public AResult<List<UserExamRecordDO>> getRecordList(@RequestParam int days) {
+    public AResult<List<UserExamRecordDO>> getRecordList(@RequestParam @Min(value = 1, message = "days最小为1") int days) {
         List<UserExamRecordDO> recentRecords = recordService.getRecentRecords(days,1,10);
         return AResult.success(recentRecords);
     }

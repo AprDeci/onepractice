@@ -1,6 +1,7 @@
 package top.aprdec.onepractice.controller;
 
 import com.easy.query.core.api.pagination.EasyPageResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import top.aprdec.onepractice.commmon.AResult;
@@ -27,7 +28,7 @@ public class UserSavedWordController {
     }
 
     @PostMapping("/getcollectedwords")
-    public AResult<EasyPageResult<WordsDO>> getCollectedWords(@RequestBody CommonPageResultReqDTO dto) {
+    public AResult<EasyPageResult<WordsDO>> getCollectedWords(@RequestBody @Valid CommonPageResultReqDTO dto) {
         return AResult.success(userSavedWordService.getUserCollectedWords(dto));
     }
 
@@ -38,5 +39,4 @@ public class UserSavedWordController {
     }
 
 }
-
 
