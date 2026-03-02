@@ -22,32 +22,32 @@ public class UserController {
     private final UserService userService;
 
     @RequestMapping("/info")
-    public AResult getUserInfoByid(){
+    public AResult getUserInfoByid() {
         long loginIdAsLong = StpUtil.getLoginIdAsLong();
         UserInfoRespDTO userinfo = userService.getUserInfoById(loginIdAsLong);
         return AResult.success(userinfo);
     }
 
     @PostMapping("/register")
-    public AResult register(@RequestBody @Validated UserRegistReqDTO requestparam){
+    public AResult register(@RequestBody @Validated UserRegistReqDTO requestparam) {
         return AResult.success(userService.register(requestparam));
     }
 
     @PostMapping("/login")
-    public AResult login(@RequestBody @Validated UserLoginReqDTO requestparam){
+    public AResult login(@RequestBody @Validated UserLoginReqDTO requestparam) {
         return AResult.success(userService.login(requestparam));
     }
 
     @PostMapping("/logout")
-    public AResult logout(){
+    public AResult logout() {
         StpUtil.logout();
         return AResult.success();
     }
 
     @PostMapping("resetpassword")
-public AResult resetPassword(@RequestBody ResetPasswordReqDTO dto){
-        if (userService.ResetPassword(dto)){
+    public AResult resetPassword(@RequestBody @Validated ResetPasswordReqDTO dto) {
+        if (userService.ResetPassword(dto)) {
             return AResult.success();
-        }else return AResult.error(200, "修改失败");
+        } else return AResult.error(200, "修改失败");
     }
 }
