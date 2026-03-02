@@ -1,7 +1,6 @@
 package top.aprdec.onepractice.annotation;
 
 import cn.dev33.satoken.stp.StpUtil;
-import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -13,8 +12,6 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import top.aprdec.onepractice.Iinterface.Idempotent;
 import top.aprdec.onepractice.exception.CommonException;
 
@@ -26,7 +23,7 @@ import java.lang.reflect.Method;
 @Slf4j
 class IdempotentAspect {
 
-    private RedissonClient redissonClient;
+    private final RedissonClient redissonClient;
 
     @Autowired
     public IdempotentAspect(RedissonClient redissonClient) {

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import top.aprdec.onepractice.dto.req.PaperqueryDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
 import top.aprdec.onepractice.dto.resp.PaperWithRatingRespDTO;
-import top.aprdec.onepractice.dto.resp.PaperdataRespDTO;
 import top.aprdec.onepractice.dto.resp.proxy.PaperWithRatingRespDTOProxy;
 import top.aprdec.onepractice.eenum.ErrorEnum;
 import top.aprdec.onepractice.entity.PaperDO;

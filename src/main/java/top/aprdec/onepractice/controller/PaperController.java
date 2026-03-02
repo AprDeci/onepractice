@@ -8,11 +8,9 @@ import top.aprdec.onepractice.commmon.AResult;
 import top.aprdec.onepractice.dto.req.PaperqueryDTO;
 import top.aprdec.onepractice.dto.resp.PaperIntroRespDTO;
 import top.aprdec.onepractice.dto.resp.PaperWithRatingRespDTO;
-import top.aprdec.onepractice.dto.resp.PaperdataRespDTO;
 import top.aprdec.onepractice.entity.PaperDO;
 import top.aprdec.onepractice.service.PaperService;
 
-import java.awt.print.Paper;
 import java.util.List;
 
 @Slf4j
