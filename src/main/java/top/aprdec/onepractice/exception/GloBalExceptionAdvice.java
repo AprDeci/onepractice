@@ -1,11 +1,14 @@
 package top.aprdec.onepractice.exception;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import top.aprdec.onepractice.commmon.AResult;
 import top.aprdec.onepractice.eenum.ErrorEnum;
 
@@ -52,6 +55,20 @@ public class GloBalExceptionAdvice {
         } catch (Exception e) {
             return AResult.error(ErrorEnum.SERVER_ERROR);
         }
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public AResult<Object> handleConstraintViolation(ConstraintViolationException ex) {
+        String message = ex.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .distinct()
+                .collect(Collectors.joining(","));
+        return AResult.error(ErrorEnum.PARAM_IS_INVALID.getCode(), message);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public AResult<Object> handleHandlerMethodValidation(HandlerMethodValidationException ex) {
+        return AResult.error(ErrorEnum.PARAM_IS_INVALID.getCode(), "参数无效");
     }
 
 }

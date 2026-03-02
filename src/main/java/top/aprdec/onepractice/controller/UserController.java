@@ -12,6 +12,8 @@ import top.aprdec.onepractice.dto.req.ResetPasswordReqDTO;
 import top.aprdec.onepractice.dto.req.UserLoginReqDTO;
 import top.aprdec.onepractice.dto.req.UserRegistReqDTO;
 import top.aprdec.onepractice.dto.resp.UserInfoRespDTO;
+import top.aprdec.onepractice.dto.resp.UserLoginRespDTO;
+import top.aprdec.onepractice.dto.resp.UserRegistRespDTO;
 import top.aprdec.onepractice.service.UserService;
 
 @RestController
@@ -22,32 +24,32 @@ public class UserController {
     private final UserService userService;
 
     @RequestMapping("/info")
-    public AResult getUserInfoByid(){
+    public AResult<UserInfoRespDTO> getUserInfoByid() {
         long loginIdAsLong = StpUtil.getLoginIdAsLong();
         UserInfoRespDTO userinfo = userService.getUserInfoById(loginIdAsLong);
         return AResult.success(userinfo);
     }
 
     @PostMapping("/register")
-    public AResult register(@RequestBody @Validated UserRegistReqDTO requestparam){
+    public AResult<UserRegistRespDTO> register(@RequestBody @Validated UserRegistReqDTO requestparam) {
         return AResult.success(userService.register(requestparam));
     }
 
     @PostMapping("/login")
-    public AResult login(@RequestBody @Validated UserLoginReqDTO requestparam){
+    public AResult<UserLoginRespDTO> login(@RequestBody @Validated UserLoginReqDTO requestparam) {
         return AResult.success(userService.login(requestparam));
     }
 
     @PostMapping("/logout")
-    public AResult logout(){
+    public AResult<Void> logout() {
         StpUtil.logout();
         return AResult.success();
     }
 
     @PostMapping("resetpassword")
-public AResult resetPassword(@RequestBody ResetPasswordReqDTO dto){
-        if (userService.ResetPassword(dto)){
+    public AResult<Void> resetPassword(@RequestBody @Validated ResetPasswordReqDTO dto) {
+        if (userService.ResetPassword(dto)) {
             return AResult.success();
-        }else return AResult.error(200, "修改失败");
+        } else return AResult.error(200, "修改失败");
     }
 }

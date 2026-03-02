@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 @Slf4j
 class IdempotentAspect {
 
-    private RedissonClient redissonClient;
+    private final RedissonClient redissonClient;
 
     @Autowired
     public IdempotentAspect(RedissonClient redissonClient) {
@@ -31,7 +31,7 @@ class IdempotentAspect {
     }
 
     @Around("execution(public * *(..)) && @annotation(top.aprdec.onepractice.Iinterface.Idempotent)")
-    public Object interceptor(ProceedingJoinPoint joinPoint) {
+    public Object interceptor(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         Idempotent idempotent = method.getAnnotation(Idempotent.class);
@@ -62,7 +62,8 @@ class IdempotentAspect {
             }
             return joinPoint.proceed();
         } catch (Throwable e) {
-            throw new CommonException("系统异常:"+e.getMessage());
+            log.error("idempotent aspect error", e);
+            throw e;
         } finally {
             if (isLocked && lock.isHeldByCurrentThread()) {
                 lock.unlock();
