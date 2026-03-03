@@ -8,8 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import top.aprdec.onepractice.Iinterface.ReuqireRecaptcha;
 import top.aprdec.onepractice.designpattern.chain.AbstractChainContext;
 import top.aprdec.onepractice.dto.req.ResetPasswordReqDTO;
@@ -55,29 +58,50 @@ public class UserServiceimpl implements UserService {
     @Override
     public UserRegistRespDTO register(UserRegistReqDTO requestparam) {
         abstractChainContext.handler(UserChainMarkEnum.USER_REGISTER_FILTER.name(),requestparam);
-        RLock rlock =redissonClient.getLock(LOCK_USER_REGISTER + requestparam.getUsername());
+        String username = requestparam.getUsername() == null ? null : requestparam.getUsername().trim();
+        requestparam.setUsername(username);
+        RLock rlock = redissonClient.getLock(LOCK_USER_REGISTER + username);
         Boolean checkcaptcha = captchaService.checkEmailCaptcha(requestparam.getEmail(),requestparam.getCaptchacode());
         if(!checkcaptcha){
             throw new GeneralBusinessException(ErrorEnum.CAPTCHA_ERROR);
         }
         boolean trylock = rlock.tryLock();
         if(!trylock){
-            throw new GeneralBusinessException(ErrorEnum.USERNAME_EXIST);
+            throw new GeneralBusinessException(ErrorEnum.REPEAT_OPERATION);
         }
-        try {
-            try {
-                requestparam.setEmail(requestparam.getEmail().toLowerCase());
-                long inserted = easyEntityQuery.insertable(BeanUtil.convert(requestparam, UserDO.class)).executeRows();
-                if (inserted < 1) {
-                    throw new GeneralBusinessException(ErrorEnum.REGISTER_ERROR);
+
+        boolean unlockByTxSync = false;
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCompletion(int status) {
+                    if (rlock.isHeldByCurrentThread()) {
+                        rlock.unlock();
+                    }
                 }
-            } catch (Exception e) {
-                log.error("用户名{}重复注册", requestparam.getUsername());
-                throw new GeneralBusinessException(ErrorEnum.USERNAME_EXIST);
+            });
+            unlockByTxSync = true;
+        }
+
+        try {
+            requestparam.setEmail(requestparam.getEmail().toLowerCase());
+            long inserted = easyEntityQuery.insertable(BeanUtil.convert(requestparam, UserDO.class)).executeRows();
+            if (inserted < 1) {
+                throw new GeneralBusinessException(ErrorEnum.REGISTER_ERROR);
             }
             userRegisterCachePenetrationFilter.add(requestparam.getUsername());
-        }finally {
-            rlock.unlock();
+        } catch (DuplicateKeyException e) {
+            log.warn("用户名{}重复注册", requestparam.getUsername());
+            throw new GeneralBusinessException(ErrorEnum.USERNAME_EXIST);
+        } catch (GeneralBusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("用户{}注册失败", requestparam.getUsername(), e);
+            throw new GeneralBusinessException(ErrorEnum.REGISTER_ERROR);
+        } finally {
+            if (!unlockByTxSync && rlock.isHeldByCurrentThread()) {
+                rlock.unlock();
+            }
         }
         return BeanUtil.convert(requestparam, UserRegistRespDTO.class);
         }
