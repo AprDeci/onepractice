@@ -2,7 +2,6 @@ package top.aprdec.onepractice.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.easy.query.api.proxy.client.EasyEntityQuery;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
@@ -29,10 +28,12 @@ import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.CaptchaService;
 import top.aprdec.onepractice.service.UserService;
 import top.aprdec.onepractice.util.BeanUtil;
+import top.aprdec.onepractice.util.RedisUtil;
 
 import java.util.Optional;
 
 import static top.aprdec.onepractice.commmon.constant.RedisKeyConstant.LOCK_USER_REGISTER;
+import static top.aprdec.onepractice.commmon.constant.RedisKeyConstant.RESET_PASSWORD_TOKEN;
 
 @Service
 @Slf4j
@@ -43,6 +44,7 @@ public class UserServiceimpl implements UserService {
     private final RBloomFilter<String> userRegisterCachePenetrationFilter;
     private final AbstractChainContext<UserRegistReqDTO> abstractChainContext;
     private final CaptchaService captchaService;
+    private final RedisUtil redisUtil;
 
 
     public Boolean hasUsername(String username){
@@ -166,8 +168,19 @@ public class UserServiceimpl implements UserService {
 
     @Override
     public Boolean ResetPassword(ResetPasswordReqDTO dto) {
-        String email = dto.getEmail();
-        UserDO user = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(email)).firstNotNull();
+        String email = dto.getEmail().toLowerCase();
+        String tokenKey = RESET_PASSWORD_TOKEN + dto.getResetToken();
+        String tokenEmail = redisUtil.getString(tokenKey);
+        if (!email.equals(tokenEmail)) {
+            throw new GeneralBusinessException(ErrorEnum.PARAM_IS_INVALID);
+        }
+        redisUtil.del(tokenKey);
+        UserDO user = easyEntityQuery.queryable(UserDO.class)
+                .where(u -> u.email().eq(email))
+                .firstOrNull();
+        if (user == null) {
+            throw new GeneralBusinessException(ErrorEnum.USER_NOT_EXIST);
+        }
         user.setPassword(dto.getPassword());
         long l = easyEntityQuery.updatable(user).executeRows();
         if(l == 0){

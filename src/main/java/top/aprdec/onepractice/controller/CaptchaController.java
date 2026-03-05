@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import top.aprdec.onepractice.Iinterface.Idempotent;
 import top.aprdec.onepractice.commmon.AResult;
 import top.aprdec.onepractice.dto.req.EmailCaptchaReqDTO;
+import top.aprdec.onepractice.dto.resp.ResetPasswordTokenRespDTO;
 
 import top.aprdec.onepractice.eenum.ErrorEnum;
 import top.aprdec.onepractice.service.CaptchaService;
@@ -29,10 +30,9 @@ public class CaptchaController {
     }
 
     @PostMapping("/email/verify")
-    public AResult<Void> verifyEmailCaptcha(@RequestBody @Valid EmailCaptchaReqDTO dto) {
-        Boolean b = captchaService.checkEmailCaptchawhenResetPassword(dto.getEmail(),dto.getCode());
-        if(b) return AResult.success();
-        else return AResult.error(ErrorEnum.CAPTCHA_ERROR);
+    public AResult<ResetPasswordTokenRespDTO> verifyEmailCaptcha(@RequestBody @Valid EmailCaptchaReqDTO dto) {
+        String resetToken = captchaService.checkEmailCaptchawhenResetPassword(dto.getEmail(), dto.getCode());
+        return AResult.success(new ResetPasswordTokenRespDTO(resetToken));
     }
 
 }

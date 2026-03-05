@@ -13,7 +13,7 @@ import java.io.UnsupportedEncodingException;
 @Component
 public class EmailUtil {
     @Autowired
-    JavaMailSender javaMailSender;
+    private JavaMailSender javaMailSender;
 
     public void sendEmail(String to, String content,String subject){
         try {
