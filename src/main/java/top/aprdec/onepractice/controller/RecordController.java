@@ -31,8 +31,12 @@ public class RecordController {
     }
 
     @GetMapping("/list")
-    public AResult<List<UserExamRecordDO>> getRecordList(@RequestParam @Min(value = 1, message = "days最小为1") int days) {
-        List<UserExamRecordDO> recentRecords = recordService.getRecentRecords(days,1,10);
+    public AResult<List<UserExamRecordDO>> getRecordList(
+            @RequestParam @Min(value = 1, message = "days最小为1") int days,
+            @RequestParam(defaultValue = "1") @Min(value = 1, message = "pageNum最小为1") int pageNum,
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "pageSize最小为1") int pageSize
+    ) {
+        List<UserExamRecordDO> recentRecords = recordService.getRecentRecords(days, pageNum, pageSize);
         return AResult.success(recentRecords);
     }
 

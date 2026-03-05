@@ -2,14 +2,16 @@ package top.aprdec.onepractice.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.easy.query.api.proxy.client.EasyEntityQuery;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import top.aprdec.onepractice.Iinterface.ReuqireRecaptcha;
 import top.aprdec.onepractice.designpattern.chain.AbstractChainContext;
 import top.aprdec.onepractice.dto.req.ResetPasswordReqDTO;
@@ -26,10 +28,12 @@ import top.aprdec.onepractice.exception.GeneralBusinessException;
 import top.aprdec.onepractice.service.CaptchaService;
 import top.aprdec.onepractice.service.UserService;
 import top.aprdec.onepractice.util.BeanUtil;
+import top.aprdec.onepractice.util.RedisUtil;
 
 import java.util.Optional;
 
 import static top.aprdec.onepractice.commmon.constant.RedisKeyConstant.LOCK_USER_REGISTER;
+import static top.aprdec.onepractice.commmon.constant.RedisKeyConstant.RESET_PASSWORD_TOKEN;
 
 @Service
 @Slf4j
@@ -40,6 +44,7 @@ public class UserServiceimpl implements UserService {
     private final RBloomFilter<String> userRegisterCachePenetrationFilter;
     private final AbstractChainContext<UserRegistReqDTO> abstractChainContext;
     private final CaptchaService captchaService;
+    private final RedisUtil redisUtil;
 
 
     public Boolean hasUsername(String username){
@@ -51,33 +56,64 @@ public class UserServiceimpl implements UserService {
         return true;
     }
 
+    @Override
+    public Boolean hasEmail(String email) {
+        if (email == null) {
+            return true;
+        }
+        String normalizedEmail = email.trim().toLowerCase();
+        long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(normalizedEmail)).count();
+        return count == 0;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public UserRegistRespDTO register(UserRegistReqDTO requestparam) {
         abstractChainContext.handler(UserChainMarkEnum.USER_REGISTER_FILTER.name(),requestparam);
-        RLock rlock =redissonClient.getLock(LOCK_USER_REGISTER + requestparam.getUsername());
+        String username = requestparam.getUsername() == null ? null : requestparam.getUsername().trim();
+        requestparam.setUsername(username);
+        RLock rlock = redissonClient.getLock(LOCK_USER_REGISTER + username);
         Boolean checkcaptcha = captchaService.checkEmailCaptcha(requestparam.getEmail(),requestparam.getCaptchacode());
         if(!checkcaptcha){
             throw new GeneralBusinessException(ErrorEnum.CAPTCHA_ERROR);
         }
         boolean trylock = rlock.tryLock();
         if(!trylock){
-            throw new GeneralBusinessException(ErrorEnum.USERNAME_EXIST);
+            throw new GeneralBusinessException(ErrorEnum.REPEAT_OPERATION);
         }
-        try {
-            try {
-                requestparam.setEmail(requestparam.getEmail().toLowerCase());
-                long inserted = easyEntityQuery.insertable(BeanUtil.convert(requestparam, UserDO.class)).executeRows();
-                if (inserted < 1) {
-                    throw new GeneralBusinessException(ErrorEnum.REGISTER_ERROR);
+
+        boolean unlockByTxSync = false;
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCompletion(int status) {
+                    if (rlock.isHeldByCurrentThread()) {
+                        rlock.unlock();
+                    }
                 }
-            } catch (Exception e) {
-                log.error("用户名{}重复注册", requestparam.getUsername());
-                throw new GeneralBusinessException(ErrorEnum.USERNAME_EXIST);
+            });
+            unlockByTxSync = true;
+        }
+
+        try {
+            requestparam.setEmail(requestparam.getEmail().toLowerCase());
+            long inserted = easyEntityQuery.insertable(BeanUtil.convert(requestparam, UserDO.class)).executeRows();
+            if (inserted < 1) {
+                throw new GeneralBusinessException(ErrorEnum.REGISTER_ERROR);
             }
             userRegisterCachePenetrationFilter.add(requestparam.getUsername());
-        }finally {
-            rlock.unlock();
+        } catch (DuplicateKeyException e) {
+            log.warn("用户名{}重复注册", requestparam.getUsername());
+            throw new GeneralBusinessException(ErrorEnum.USERNAME_EXIST);
+        } catch (GeneralBusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("用户{}注册失败", requestparam.getUsername(), e);
+            throw new GeneralBusinessException(ErrorEnum.REGISTER_ERROR);
+        } finally {
+            if (!unlockByTxSync && rlock.isHeldByCurrentThread()) {
+                rlock.unlock();
+            }
         }
         return BeanUtil.convert(requestparam, UserRegistRespDTO.class);
         }
@@ -142,8 +178,19 @@ public class UserServiceimpl implements UserService {
 
     @Override
     public Boolean ResetPassword(ResetPasswordReqDTO dto) {
-        String email = dto.getEmail();
-        UserDO user = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(email)).firstNotNull();
+        String email = dto.getEmail().toLowerCase();
+        String tokenKey = RESET_PASSWORD_TOKEN + dto.getResetToken();
+        String tokenEmail = redisUtil.getString(tokenKey);
+        if (!email.equals(tokenEmail)) {
+            throw new GeneralBusinessException(ErrorEnum.PARAM_IS_INVALID);
+        }
+        redisUtil.del(tokenKey);
+        UserDO user = easyEntityQuery.queryable(UserDO.class)
+                .where(u -> u.email().eq(email))
+                .firstOrNull();
+        if (user == null) {
+            throw new GeneralBusinessException(ErrorEnum.USER_NOT_EXIST);
+        }
         user.setPassword(dto.getPassword());
         long l = easyEntityQuery.updatable(user).executeRows();
         if(l == 0){

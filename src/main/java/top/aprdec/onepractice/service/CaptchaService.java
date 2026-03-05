@@ -5,5 +5,5 @@ public interface CaptchaService {
 
     Boolean checkEmailCaptcha(String email, String captcha);
 
-    Boolean checkEmailCaptchawhenResetPassword(String email, String captcha);
+    String checkEmailCaptchawhenResetPassword(String email, String captcha);
 }

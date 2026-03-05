@@ -15,8 +15,8 @@ import top.aprdec.onepractice.util.EmailUtil;
 import top.aprdec.onepractice.util.RedisUtil;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.UUID;
 
 import static top.aprdec.onepractice.eenum.EmailTemplateEnum.VERIFICATION_CODE_EMAIL_SUBTITLE;
 
@@ -24,6 +24,7 @@ import static top.aprdec.onepractice.eenum.EmailTemplateEnum.VERIFICATION_CODE_E
 @RequiredArgsConstructor
 @Slf4j
 public class CaptchaServiceimpl implements CaptchaService {
+    private static final String CAPTCHA_SENDING_PLACEHOLDER = "SENDING";
     private final EmailUtil emailutil;
     private final RedisUtil redisutil;
     private final EasyEntityQuery easyEntityQuery;
@@ -33,38 +34,48 @@ public class CaptchaServiceimpl implements CaptchaService {
         if(StringUtils.isBlank(email)){
             throw new GeneralBusinessException(ErrorEnum.PARAM_IS_BLANK);
         }
+        email = email.toLowerCase();
         String key = RedisKeyConstant.CAPTCHA_EMAIL + email;
+
+        // 原子占位，避免并发下重复发送
+        Boolean occupied = redisutil.setNx(key, CAPTCHA_SENDING_PLACEHOLDER, 60);
+        if (Boolean.FALSE.equals(occupied)) {
+            throw new GeneralBusinessException(ErrorEnum.EMAIL_SEND_WAIT);
+        }
+
         String captcha = String.format("%06d", ThreadLocalRandom.current().nextInt(1000000));
         log.info("email:{},captcha:{}", email, captcha);
 
-        // 检查缓存
-        if(!redisutil.haskey(key)) {
-            // 异步发送邮件，不等待结果
-            CompletableFuture.runAsync(() -> {
-                try {
-                    emailutil.sendEmail(email,
-                            EmailTemplateEnum.VERIFICATION_CODE_EMAIL_HTML.set(captcha),
-                            VERIFICATION_CODE_EMAIL_SUBTITLE.getTemplate());
-                    // 发送成功,存入Redis
-                    redisutil.set(key, captcha, 60);
-                    log.info("验证码发送成功并已存入Redis");
-                } catch (Exception e) {
-                    log.error("验证码发送失败: {}", e.getMessage());
-                }
-            });
-            //不再等待发送结果
-            return true;
-        } else {
-            throw new GeneralBusinessException(ErrorEnum.EMAIL_SEND_WAIT);
-        }
+        // 异步发送邮件，不等待结果
+        String finalEmail = email;
+        CompletableFuture.runAsync(() -> {
+            try {
+                emailutil.sendEmail(finalEmail,
+                        EmailTemplateEnum.VERIFICATION_CODE_EMAIL_HTML.set(captcha),
+                        VERIFICATION_CODE_EMAIL_SUBTITLE.getTemplate());
+                // 发送成功，写入真实验证码
+                redisutil.set(key, captcha, 60);
+                log.info("验证码发送成功并已存入Redis");
+            } catch (Exception e) {
+                // 发送失败释放占位，避免用户一直被限流
+                redisutil.del(key);
+                log.error("验证码发送失败: {}", e.getMessage());
+            }
+        });
+        // 不再等待发送结果
+        return true;
     }
 
     @Override
     public Boolean checkEmailCaptcha(String email, String captcha) {
+        if (StringUtils.isBlank(email)) {
+            return false;
+        }
+        email = email.toLowerCase();
         String key = RedisKeyConstant.CAPTCHA_EMAIL+email;
         String cacheCaptcha = redisutil.getString(key);
         if(!StringUtils.isBlank(cacheCaptcha)) {
-            Boolean result =  captcha.equals(cacheCaptcha);
+            Boolean result = StringUtils.equals(captcha, cacheCaptcha);
             if(result){
                 redisutil.del(key);
             }
@@ -75,13 +86,24 @@ public class CaptchaServiceimpl implements CaptchaService {
     }
 
     @Override
-    public Boolean checkEmailCaptchawhenResetPassword(String email, String captcha) {
+    public String checkEmailCaptchawhenResetPassword(String email, String captcha) {
+        if (StringUtils.isBlank(email) || StringUtils.isBlank(captcha)) {
+            throw new GeneralBusinessException(ErrorEnum.PARAM_IS_INVALID);
+        }
+        email = email.toLowerCase();
 //        检查是否存在邮箱
-        long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(email)).count();
+        String finalEmail = email;
+        long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(finalEmail)).count();
         if(count==0){
             throw new GeneralBusinessException(ErrorEnum.PARAM_IS_INVALID);
         }
-        return checkEmailCaptcha(email,captcha);
+        Boolean verified = checkEmailCaptcha(email, captcha);
+        if (Boolean.FALSE.equals(verified)) {
+            throw new GeneralBusinessException(ErrorEnum.CAPTCHA_ERROR);
+        }
+        String resetToken = UUID.randomUUID().toString().replace("-", "");
+        redisutil.set(RedisKeyConstant.RESET_PASSWORD_TOKEN + resetToken, email, 300);
+        return resetToken;
     }
 
 }

@@ -26,6 +26,7 @@ public enum ErrorEnum {
 
 //    30000-40000 数据错误
     USERNAME_EXIST(30001,"用户名已存在"),
+    EMAIL_EXIST(30002, "邮箱已存在"),
 
 
     //40000-50000 权限错误
