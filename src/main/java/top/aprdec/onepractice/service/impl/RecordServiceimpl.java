@@ -44,7 +44,9 @@ public class RecordServiceimpl implements RecordService {
 
     private final PaperService paperService;
 
-    private final int RECORD_TIME = 30 * 24 * 60 * 60;
+    private static final int RECORD_TTL_SECONDS = 30 * 24 * 60 * 60;
+
+    private static final long RECORD_TTL_MILLIS = 30L * 24 * 60 * 60 * 1000;
 
 
 
@@ -53,6 +55,7 @@ public class RecordServiceimpl implements RecordService {
         long loginId = StpUtil.getLoginIdAsLong();
         String recordId = RecordIdGenerator.nextRecordId();
         long timestamp = System.currentTimeMillis();
+        long expireBefore = timestamp - RECORD_TTL_MILLIS;
 
         String recordKey = String.format(RedisKeyConstant.USER_RECORD + "%d:%s", loginId, recordId);
 
@@ -75,14 +78,15 @@ public class RecordServiceimpl implements RecordService {
                 operations.multi();
 
                 // 1. 将记录详情存入String类型
-                operations.opsForValue().set(recordKey, convert, RECORD_TIME, TimeUnit.SECONDS);
+                operations.opsForValue().set(recordKey, convert, RECORD_TTL_SECONDS, TimeUnit.SECONDS);
 
                 // 2. 将记录ID添加到Sorted Set，score使用时间戳
                 String sortedSetKey = RedisKeyConstant.USER_RECORD_SORTED_SET + loginId;
                 operations.opsForZSet().add(sortedSetKey, recordKey, timestamp);
+                operations.opsForZSet().removeRangeByScore(sortedSetKey, 0, expireBefore);
 
                 // 3. 设置Sorted Set的过期时间
-                operations.expire(sortedSetKey, RECORD_TIME, TimeUnit.SECONDS);
+                operations.expire(sortedSetKey, RECORD_TTL_SECONDS, TimeUnit.SECONDS);
 
                 return operations.exec();
             }
@@ -106,9 +110,12 @@ public class RecordServiceimpl implements RecordService {
         }
 
         long loginId = StpUtil.getLoginIdAsLong();
-        long minTimestamp = System.currentTimeMillis() - days * 24 * 60 * 60 * 1000L;
+        long now = System.currentTimeMillis();
+        long minTimestamp = now - days * 24 * 60 * 60 * 1000L;
 
         String sortedSetKey = RedisKeyConstant.USER_RECORD_SORTED_SET + loginId;
+        long expireBefore = now - RECORD_TTL_MILLIS;
+        stringRedisTemplate.opsForZSet().removeRangeByScore(sortedSetKey, 0, expireBefore);
 
 
 
@@ -116,7 +123,7 @@ public class RecordServiceimpl implements RecordService {
         Set<String> recordKeys = stringRedisTemplate.opsForZSet().reverseRangeByScore(
                 sortedSetKey,
                 minTimestamp,
-                System.currentTimeMillis(),
+                now,
                 (long) (pageNum - 1) * pageSize,
                 pageSize
         );
@@ -132,8 +139,15 @@ public class RecordServiceimpl implements RecordService {
             return Collections.emptyList();
         }
 
-        for (Object record : records) {
+        List<String> missingRecordKeys = new ArrayList<>();
+
+        List<String> keyList = new ArrayList<>(recordKeys);
+        for (int i = 0; i < records.size(); i++) {
+            Object record = records.get(i);
             if (record == null) {
+                if (i < keyList.size()) {
+                    missingRecordKeys.add(keyList.get(i));
+                }
                 continue;
             }
             if (record instanceof UserExamRecordDO userExamRecord) {
@@ -143,6 +157,10 @@ public class RecordServiceimpl implements RecordService {
             result.add(JSON.parseObject(JSON.toJSONString(record), UserExamRecordDO.class));
         }
 
+        if (!missingRecordKeys.isEmpty()) {
+            stringRedisTemplate.opsForZSet().remove(sortedSetKey, missingRecordKeys.toArray());
+        }
+
         return result;
     }
 
@@ -150,6 +168,7 @@ public class RecordServiceimpl implements RecordService {
     public void updateRecord(RecordReqDTO recordReqDTO) {
         long loginId = StpUtil.getLoginIdAsLong();
         long timestamp = System.currentTimeMillis();
+        long expireBefore = timestamp - RECORD_TTL_MILLIS;
         String recordId = recordReqDTO.getRecordId();
         String targetKey = String.format(RedisKeyConstant.USER_RECORD + "%d:%s", loginId, recordId);
 
@@ -174,13 +193,14 @@ public class RecordServiceimpl implements RecordService {
         redisTemplate.opsForValue().set(
                 targetKey,
                 existingRecord,
-                RECORD_TIME,
+                RECORD_TTL_SECONDS,
                 TimeUnit.SECONDS
         );
 
         String sortedSetKey = RedisKeyConstant.USER_RECORD_SORTED_SET + loginId;
         redisTemplate.opsForZSet().add(sortedSetKey, targetKey, timestamp);
-        redisTemplate.expire(sortedSetKey, RECORD_TIME, TimeUnit.SECONDS);
+        redisTemplate.opsForZSet().removeRangeByScore(sortedSetKey, 0, expireBefore);
+        redisTemplate.expire(sortedSetKey, RECORD_TTL_SECONDS, TimeUnit.SECONDS);
     }
 
 
