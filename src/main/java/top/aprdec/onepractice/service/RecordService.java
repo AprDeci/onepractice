@@ -1,6 +1,7 @@
 package top.aprdec.onepractice.service;
 
 import top.aprdec.onepractice.dto.req.RecordReqDTO;
+import top.aprdec.onepractice.dto.resp.PracticeHeatmapRespDTO;
 import top.aprdec.onepractice.entity.UserExamRecordDO;
 
 import java.util.List;
