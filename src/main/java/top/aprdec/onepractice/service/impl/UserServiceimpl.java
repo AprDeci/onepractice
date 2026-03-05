@@ -56,6 +56,16 @@ public class UserServiceimpl implements UserService {
         return true;
     }
 
+    @Override
+    public Boolean hasEmail(String email) {
+        if (email == null) {
+            return true;
+        }
+        String normalizedEmail = email.trim().toLowerCase();
+        long count = easyEntityQuery.queryable(UserDO.class).where(u -> u.email().eq(normalizedEmail)).count();
+        return count == 0;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public UserRegistRespDTO register(UserRegistReqDTO requestparam) {
