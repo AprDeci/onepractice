@@ -1,5 +1,7 @@
 package top.aprdec.onepractice.util;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Snowflake + Base62 record id generator.
  */
